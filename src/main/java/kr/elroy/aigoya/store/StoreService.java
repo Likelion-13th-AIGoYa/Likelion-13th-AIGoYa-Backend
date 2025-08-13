@@ -1,9 +1,9 @@
 package kr.elroy.aigoya.store;
 
 import kr.elroy.aigoya.security.JwtTokenService;
-import kr.elroy.aigoya.store.dto.CreateStoreRequest;
-import kr.elroy.aigoya.store.dto.LoginRequest;
-import kr.elroy.aigoya.store.dto.LoginResponse;
+import kr.elroy.aigoya.store.dto.request.CreateStoreRequest;
+import kr.elroy.aigoya.store.dto.request.LoginRequest;
+import kr.elroy.aigoya.store.dto.response.LoginResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
