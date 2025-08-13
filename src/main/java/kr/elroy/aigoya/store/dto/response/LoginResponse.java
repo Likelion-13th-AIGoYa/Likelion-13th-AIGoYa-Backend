@@ -1,4 +1,4 @@
-package kr.elroy.aigoya.store.dto;
+package kr.elroy.aigoya.store.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

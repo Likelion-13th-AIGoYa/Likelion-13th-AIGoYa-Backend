@@ -1,10 +1,11 @@
-package kr.elroy.aigoya.product;
+package kr.elroy.aigoya.product.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import kr.elroy.aigoya.product.dto.CreateProductRequest;
+import kr.elroy.aigoya.product.dto.request.CreateProductRequest;
+import kr.elroy.aigoya.product.dto.response.ProductResponse;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +29,7 @@ public interface ProductApi {
     );
 
     @Operation(summary = "상품 생성", description = "새로운 상품을 생성합니다.")
-    @PostMapping("/create")
+    @PostMapping
     ProductResponse createProduct(
             @Valid
             @RequestBody

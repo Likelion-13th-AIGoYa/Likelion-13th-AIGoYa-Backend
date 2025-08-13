@@ -1,6 +1,7 @@
-package kr.elroy.aigoya.product;
+package kr.elroy.aigoya.product.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import kr.elroy.aigoya.product.Product;
 
 @Schema(description = "상품 응답 DTO")
 public record ProductResponse(
@@ -13,4 +14,11 @@ public record ProductResponse(
         @Schema(description = "상품 가격", example = "18000")
         Long price
 ) {
+    public static ProductResponse from(Product product) {
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getPrice()
+        );
+    }
 }

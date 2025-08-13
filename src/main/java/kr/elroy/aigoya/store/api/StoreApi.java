@@ -1,13 +1,13 @@
-package kr.elroy.aigoya.store;
+package kr.elroy.aigoya.store.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import kr.elroy.aigoya.store.dto.CreateStoreRequest;
-import kr.elroy.aigoya.store.dto.LoginRequest;
-import kr.elroy.aigoya.store.dto.LoginResponse;
-import kr.elroy.aigoya.store.dto.StoreResponse;
+import kr.elroy.aigoya.store.dto.request.CreateStoreRequest;
+import kr.elroy.aigoya.store.dto.request.LoginRequest;
+import kr.elroy.aigoya.store.dto.response.LoginResponse;
+import kr.elroy.aigoya.store.dto.response.StoreResponse;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

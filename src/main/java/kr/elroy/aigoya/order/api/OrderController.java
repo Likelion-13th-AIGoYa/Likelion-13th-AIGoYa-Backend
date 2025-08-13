@@ -1,8 +1,9 @@
-package kr.elroy.aigoya.order;
+package kr.elroy.aigoya.order.api;
 
-import kr.elroy.aigoya.order.dto.CreateOrderRequest;
-import kr.elroy.aigoya.order.dto.OrderResponse;
-import kr.elroy.aigoya.order.dto.UpdateOrderRequest;
+import kr.elroy.aigoya.order.OrderService;
+import kr.elroy.aigoya.order.dto.request.CreateOrderRequest;
+import kr.elroy.aigoya.order.dto.response.OrderResponse;
+import kr.elroy.aigoya.order.dto.request.UpdateOrderRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 

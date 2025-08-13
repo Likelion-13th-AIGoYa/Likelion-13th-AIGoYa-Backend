@@ -1,12 +1,12 @@
-package kr.elroy.aigoya.order;
+package kr.elroy.aigoya.order.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import kr.elroy.aigoya.order.dto.CreateOrderRequest;
-import kr.elroy.aigoya.order.dto.OrderResponse;
-import kr.elroy.aigoya.order.dto.UpdateOrderRequest;
+import kr.elroy.aigoya.order.dto.request.CreateOrderRequest;
+import kr.elroy.aigoya.order.dto.response.OrderResponse;
+import kr.elroy.aigoya.order.dto.request.UpdateOrderRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
