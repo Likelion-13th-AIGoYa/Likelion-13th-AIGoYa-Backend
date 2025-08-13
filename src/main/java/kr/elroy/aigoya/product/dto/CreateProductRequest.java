@@ -1,0 +1,23 @@
+package kr.elroy.aigoya.product.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
+@Schema(description = "상품 생성 요청")
+public record CreateProductRequest(
+        @Schema(description = "상품 이름", example = "치킨")
+        @NotBlank
+        String name,
+
+        @Schema(description = "상품 가격", example = "18000")
+        @NotNull
+        @Positive
+        Long price,
+
+        @Schema(description = "가게 ID", example = "1")
+        @NotNull
+        Long storeId
+) {
+}
