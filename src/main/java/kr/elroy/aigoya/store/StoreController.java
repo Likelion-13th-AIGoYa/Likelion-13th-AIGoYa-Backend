@@ -17,13 +17,13 @@ public class StoreController implements StoreApi {
     @Override
     public StoreResponse getStore(Long id) {
         Store store = storeService.getStore(id);
-        return new StoreResponse(store.getId(), store.getName(), store.getEmail());
+        return StoreResponse.of(store);
     }
 
     @Override
     public StoreResponse createStore(@Valid @RequestBody CreateStoreRequest request) {
         Store store = storeService.createStore(request);
-        return new StoreResponse(store.getId(), store.getName(), store.getEmail());
+        return StoreResponse.of(store);
     }
 
     @Override
