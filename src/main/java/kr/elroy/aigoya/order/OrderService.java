@@ -1,8 +1,8 @@
 package kr.elroy.aigoya.order;
 
-import kr.elroy.aigoya.order.dto.CreateOrderRequest;
-import kr.elroy.aigoya.order.dto.OrderResponse;
-import kr.elroy.aigoya.order.dto.UpdateOrderRequest;
+import kr.elroy.aigoya.order.dto.request.CreateOrderRequest;
+import kr.elroy.aigoya.order.dto.response.OrderResponse;
+import kr.elroy.aigoya.order.dto.request.UpdateOrderRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
