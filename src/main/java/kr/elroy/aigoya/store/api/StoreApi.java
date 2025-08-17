@@ -16,35 +16,31 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "가게 API", description = "가게 API")
+@Tag(name = "가게 (공개)", description = "로그인 없이 호출 가능한 가게 API")
 @RestController
 @Validated
 @RequestMapping("/v1/stores")
 public interface StoreApi {
 
-    @Operation(summary = "가게 조회", description = "가게 정보를 조회합니다.")
-    @GetMapping("/{id}")
-    StoreResponse getStore(
-            @Parameter(description = "가게 ID", required = true, example = "1")
-            @PathVariable
-            Long id
-    );
-
-    @Operation(summary = "가게 생성", description = "새로운 가게를 생성합니다.")
+    @Operation(summary = "가게 생성 (회원가입)", description = "새로운 가게를 생성합니다.")
     @PostMapping("/create")
     StoreResponse createStore(
-            @Valid
-            @RequestBody
-            @Parameter(description = "가게 정보", required = true)
-            CreateStoreRequest request
+            @Valid @RequestBody CreateStoreRequest request
     );
 
     @Operation(summary = "로그인", description = "가게 로그인을 합니다.")
     @PostMapping("/login")
     LoginResponse login(
-            @Valid
-            @RequestBody
-            @Parameter(description = "로그인 정보", required = true)
-            LoginRequest request
+            @Valid @RequestBody LoginRequest request
     );
+
+    @Operation(summary = "특정 가게 정보 조회", description = "ID로 특정 가게의 공개 정보를 조회합니다.")
+    @GetMapping("/{id}")
+    StoreResponse getStore(
+            @Parameter(description = "가게 ID", required = true, example = "1")
+            @PathVariable Long id
+    );
+
+    // @Operation(summary = "내 가게 조회", ...) <-- 이 메서드와 관련된 선언을 삭제하세요.
+    // StoreResponse getMyStore(); <-- 이 줄을 삭제하면 됩니다.
 }
