@@ -3,7 +3,7 @@ package kr.elroy.aigoya.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import kr.elroy.aigoya.store.domain.Store;
+import kr.elroy.aigoya.store.Store;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
