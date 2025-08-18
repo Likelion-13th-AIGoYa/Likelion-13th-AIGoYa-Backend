@@ -2,7 +2,7 @@ package kr.elroy.aigoya.store.api;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.elroy.aigoya.store.dto.request.EmployeeRequest;
+import kr.elroy.aigoya.store.dto.request.AddEmployeeRequest;
 import kr.elroy.aigoya.store.dto.response.EmployeeResponse;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +16,7 @@ public interface EmployeeApi {
     @PostMapping
     EmployeeResponse addEmployee(
             @Parameter(hidden = true) @AuthenticationPrincipal(expression = "id") Long storeId,
-            @RequestBody EmployeeRequest request
+            @RequestBody AddEmployeeRequest request
     );
 
     @GetMapping

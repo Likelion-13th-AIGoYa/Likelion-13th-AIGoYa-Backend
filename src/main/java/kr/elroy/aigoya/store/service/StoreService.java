@@ -5,7 +5,7 @@ import kr.elroy.aigoya.store.domain.Store;
 import kr.elroy.aigoya.store.dto.request.CreateStoreRequest;
 import kr.elroy.aigoya.store.dto.request.LoginRequest;
 import kr.elroy.aigoya.store.dto.request.UpdatePasswordRequest;
-import kr.elroy.aigoya.store.dto.request.UpdateStoreRequest; // DTO 이름도 통일
+import kr.elroy.aigoya.store.dto.request.UpdateStoreRequest;
 import kr.elroy.aigoya.store.dto.response.LoginResponse;
 import kr.elroy.aigoya.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,13 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class StoreService {
 
     private final StoreRepository storeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenService jwtTokenService;
 
+    @Transactional
     public Store createStore(CreateStoreRequest request) {
         if (storeRepository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
@@ -63,8 +63,9 @@ public class StoreService {
         return LoginResponse.of(accessToken, store.getId(), store.getName(), store.getEmail());
     }
 
+    @Transactional
     public Store updateStore(Long storeId, UpdateStoreRequest request) {
-        Store store = getStore(storeId); // getStore 메서드로 조회 로직 재사용
+        Store store = getStore(storeId);
 
         store.setName(request.name());
         store.setPhone(request.phone());
@@ -74,19 +75,22 @@ public class StoreService {
         return store;
     }
 
+    @Transactional
     public void updatePassword(Long storeId, UpdatePasswordRequest request) {
         Store store = getStore(storeId);
 
         if (!passwordEncoder.matches(request.currentPassword(), store.getPassword())) {
             throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
         }
-        if (request.currentPassword().equals(request.newPassword())) {
+
+        if (passwordEncoder.matches(request.newPassword(), store.getPassword())) {
             throw new IllegalArgumentException("새 비밀번호는 현재 비밀번호와 달라야 합니다.");
         }
 
         store.setPassword(passwordEncoder.encode(request.newPassword()));
     }
 
+    @Transactional
     public void deleteStore(Long id) {
         Store store = getStore(id);
         storeRepository.delete(store);

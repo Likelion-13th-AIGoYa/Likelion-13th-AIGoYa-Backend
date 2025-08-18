@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 @Schema(description = "직원 정보 요청 (추가/수정)")
-public record EmployeeRequest(
+public record AddEmployeeRequest(
         @NotBlank(message = "직원 이름은 필수입니다.")
         @Schema(description = "직원 이름", example = "김아르바")
         String name,

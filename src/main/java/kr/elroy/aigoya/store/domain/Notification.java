@@ -36,9 +36,6 @@ public class Notification {
         this.createdAt = LocalDateTime.now();
     }
 
-    /**
-     * 알림을 '읽음' 상태로 변경
-     */
     public void read() {
         this.isRead = true;
     }

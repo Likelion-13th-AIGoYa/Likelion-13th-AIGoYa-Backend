@@ -11,31 +11,29 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
 
-@RestController
 @RequiredArgsConstructor
 public class MyStoreController implements MyStoreApi {
 
     private final StoreService storeService;
 
     @Override
-    public StoreResponse getMyStore(@AuthenticationPrincipal(expression = "id") Long storeId) {
+    public StoreResponse getMyStore(Long storeId) {
         Store store = storeService.getStore(storeId);
         return StoreResponse.of(store);
     }
 
     @Override
     public StoreResponse updateMyStore(
-            @AuthenticationPrincipal(expression = "id") Long storeId,
-            @Valid @RequestBody UpdateStoreRequest request
+            Long storeId,
+            UpdateStoreRequest request
     ) {
         Store updatedStore = storeService.updateStore(storeId, request);
         return StoreResponse.of(updatedStore);
     }
 
     @Override
-    public void deleteMyStore(@AuthenticationPrincipal(expression = "id") Long storeId) {
+    public void deleteMyStore(Long storeId) {
         storeService.deleteStore(storeId);
     }
 

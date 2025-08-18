@@ -33,14 +33,4 @@ public interface StoreApi {
     LoginResponse login(
             @Valid @RequestBody LoginRequest request
     );
-
-    @Operation(summary = "특정 가게 정보 조회", description = "ID로 특정 가게의 공개 정보를 조회합니다.")
-    @GetMapping("/{id}")
-    StoreResponse getStore(
-            @Parameter(description = "가게 ID", required = true, example = "1")
-            @PathVariable Long id
-    );
-
-    // @Operation(summary = "내 가게 조회", ...) <-- 이 메서드와 관련된 선언을 삭제하세요.
-    // StoreResponse getMyStore(); <-- 이 줄을 삭제하면 됩니다.
 }

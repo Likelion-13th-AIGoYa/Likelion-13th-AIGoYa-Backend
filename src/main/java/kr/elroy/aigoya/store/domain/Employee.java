@@ -39,16 +39,10 @@ public class Employee {
         this.store = store;
     }
 
-    /**
-     * 직원의 출근 시간 기록
-     */
     public void checkIn(LocalDateTime time) {
         this.checkInTime = time;
     }
 
-    /**
-     * 직원의 정보 수정
-     */
     public void updateInfo(String name, String role, Integer hourlyWage) {
         this.name = name;
         this.role = role;

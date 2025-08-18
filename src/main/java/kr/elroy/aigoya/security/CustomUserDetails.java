@@ -1,4 +1,3 @@
-// in security 모듈
 package kr.elroy.aigoya.security;
 
 import kr.elroy.aigoya.store.domain.Store;
@@ -23,5 +22,21 @@ public class CustomUserDetails implements UserDetails {
     public String getPassword() { return store.getPassword(); }
     @Override
     public String getUsername() { return store.getEmail(); }
-    // ... isEnabled() 등 나머지 메서드들 ...
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

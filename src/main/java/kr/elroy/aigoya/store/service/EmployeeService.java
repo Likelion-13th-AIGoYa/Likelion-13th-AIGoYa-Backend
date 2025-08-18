@@ -2,7 +2,7 @@ package kr.elroy.aigoya.store.service;
 
 import kr.elroy.aigoya.store.domain.Employee;
 import kr.elroy.aigoya.store.domain.Store;
-import kr.elroy.aigoya.store.dto.request.EmployeeRequest;
+import kr.elroy.aigoya.store.dto.request.AddEmployeeRequest;
 import kr.elroy.aigoya.store.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final StoreService storeService;
 
-    public Employee addEmployee(Long storeId, EmployeeRequest request) {
+    public Employee addEmployee(Long storeId, AddEmployeeRequest request) {
         Store store = storeService.getStore(storeId);
 
         Employee employee = Employee.builder()

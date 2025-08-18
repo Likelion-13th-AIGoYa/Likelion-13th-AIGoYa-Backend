@@ -5,17 +5,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.experimental.SuperBuilder;
+import lombok.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Getter
-@Setter // Setter는 비즈니스 메서드로 대체하는 것을 고려해볼 수 있습니다.
-@SuperBuilder
-@Entity(name = "store") // 테이블 명은 'store' 그대로 사용합니다.
+@Setter
+@Builder
+@Entity(name = "store")
 public class Store {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
