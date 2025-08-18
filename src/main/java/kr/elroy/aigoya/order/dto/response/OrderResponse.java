@@ -11,11 +11,17 @@ public record OrderResponse(
         @Schema(description = "주문 ID", example = "1")
         Long orderId,
 
-        @Schema(description = "주문 총 금액", example = "25000")
-        Long totalPrice,
+        @Schema(description = "가게 ID", example = "100")
+        Long storeId,
+
+        @Schema(description = "가게 이름", example ="K-Cafe")
+        String storeName,
 
         @Schema(description = "주문 상품 목록")
-        List<OrderProductResponse> orderProducts
+        List<OrderProductResponse> orderProducts,
+
+        @Schema(description = "주문 총 금액", example = "25000")
+        Long totalPrice
 ) {
     @Schema(description = "주문 상품 응답")
     public record OrderProductResponse(
@@ -37,8 +43,10 @@ public record OrderResponse(
 
         return new OrderResponse(
                 order.getId(),
-                order.getTotalPrice(),
-                orderProducts
+                order.getStore().getId(),
+                order.getStore().getName(),
+                orderProducts,
+                order.getTotalPrice()
         );
     }
 }

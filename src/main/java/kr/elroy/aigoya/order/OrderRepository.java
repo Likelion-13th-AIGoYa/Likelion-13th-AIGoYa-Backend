@@ -2,5 +2,12 @@ package kr.elroy.aigoya.order;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface OrderRepository extends JpaRepository<Order, Long> {
+
+    List<Order> findByStoreId(Long storeId);
+
+    Optional<Order> findByIdAndStoreId(Long id, Long storeId);
 }

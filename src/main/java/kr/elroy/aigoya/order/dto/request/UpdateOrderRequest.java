@@ -9,6 +9,10 @@ import java.util.List;
 
 @Schema(description = "주문 수정 요청")
 public record UpdateOrderRequest(
+        @Schema(description = "가게 ID", example = "1")
+        @NotNull
+        Long storeId,
+
         @Schema(description = "주문 상품 목록")
         @NotEmpty
         @Valid
