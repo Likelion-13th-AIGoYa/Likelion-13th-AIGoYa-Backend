@@ -7,7 +7,6 @@ import kr.elroy.aigoya.store.dto.response.EmployeeResponse;
 import kr.elroy.aigoya.store.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class EmployeeController implements EmployeeApi {
