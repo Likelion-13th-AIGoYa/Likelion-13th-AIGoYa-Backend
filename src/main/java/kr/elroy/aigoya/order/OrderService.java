@@ -25,7 +25,6 @@ public class OrderService {
     private final StoreRepository storeRepository;
     private final ProductRepository productRepository;
 
-    /*-----------관리자용 Order 처리 ---------------*/
     @Transactional(readOnly = true)
     public OrderResponse getOrder(Long id, Long storeId) {
         Order order = orderRepository.findByIdAndStoreId(id, storeId)
@@ -50,7 +49,6 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    /*-----------Order 생성/수정/삭제 ---------------*/
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request, Long storeId) {
         Store store = storeRepository.findById(storeId)
@@ -101,7 +99,6 @@ public class OrderService {
         orderRepository.delete(order);
     }
 
-    /*-----------유틸리티 메서드 ---------------*/
     private Long calculateTotal(List<OrderProduct> orderProducts) {
         return orderProducts.stream()
                 .mapToLong(op -> op.getProduct().getPrice() * op.getQuantity())
