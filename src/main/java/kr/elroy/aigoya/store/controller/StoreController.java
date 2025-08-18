@@ -20,7 +20,7 @@ public class StoreController implements StoreApi {
     }
 
     @Override
-    public LoginResponse login(LoginRequest request) { // <-- 어노테이션 제거
+    public LoginResponse login(LoginRequest request) {
         return storeService.login(request);
     }
 }
