@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             
             if (store != null && jwtTokenService.isTokenValid(jwt)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        store,
+                        store.getId(),
                         null,
                         List.of(new SimpleGrantedAuthority("ROLE_STORE"))
                 );
