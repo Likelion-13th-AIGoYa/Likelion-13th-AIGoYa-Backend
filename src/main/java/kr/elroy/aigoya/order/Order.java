@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,7 +32,8 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderProduct> orderProducts;
 
-    @Column(name = "order_date", nullable = false)
+    @Column(name = "order_date", nullable = false, updatable = false)
+    @CreationTimestamp
     private LocalDateTime orderDate;
 
     @Column(name = "total_price", nullable = false)

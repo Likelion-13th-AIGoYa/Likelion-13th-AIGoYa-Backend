@@ -61,13 +61,18 @@ public class OrderService {
                     return new OrderProduct(null, null, product, productRequest.quantity());
                 }).collect(Collectors.toList());
 
-        Order order = new Order(null, store, orderProducts, LocalDateTime.now(), calculateTotal(orderProducts));
+        Order order = Order.builder()
+                .store(store)
+                .orderProducts(orderProducts)
+                .totalPrice(calculateTotal(orderProducts))
+                .build();
 
         orderProducts.forEach(op -> op.setOrder(order));
 
         Order savedOrder = orderRepository.save(order);
         return OrderResponse.from(savedOrder);
     }
+
 
     @Transactional
     public OrderResponse updateOrder(Long id, UpdateOrderRequest request, Long storeId) {
