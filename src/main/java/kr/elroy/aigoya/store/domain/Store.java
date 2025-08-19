@@ -6,6 +6,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
+import jakarta.persistence.OneToMany;
+import kr.elroy.aigoya.order.domain.Order;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -26,6 +31,9 @@ public class Store {
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
+
+    @OneToMany(mappedBy = "store", orphanRemoval = true)
+    private List<Order> orders = new ArrayList<>();
 
     @Column(name = "phone", nullable = false)
     private String phone;
