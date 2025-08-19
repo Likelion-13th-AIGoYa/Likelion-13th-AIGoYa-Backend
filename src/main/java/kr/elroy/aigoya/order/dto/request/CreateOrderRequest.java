@@ -12,10 +12,10 @@ public record CreateOrderRequest(
         @Schema(description = "주문 상품 목록")
         @NotEmpty
         @Valid
-        List<OrderProductRequest> orderProducts
+        List<OrderProductDto> orderProducts
 ) {
     @Schema(description = "주문 상품 정보")
-    public record OrderProductRequest(
+    public record OrderProductDto(
             @Schema(description = "상품 ID", example = "1")
             @NotNull
             Long productId,
