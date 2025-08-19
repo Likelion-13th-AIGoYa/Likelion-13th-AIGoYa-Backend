@@ -15,7 +15,7 @@ public record CreateOrderRequest(
         List<OrderProductDto> orderProducts,
 
         @Schema(description = "주문 시간", example = "2023-10-01T12:00:00")
-        @NotEmpty
+        @NotNull
         LocalDateTime orderedAt
 ) {
 }
