@@ -1,4 +1,4 @@
-package kr.elroy.aigoya.order;
+package kr.elroy.aigoya.order.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

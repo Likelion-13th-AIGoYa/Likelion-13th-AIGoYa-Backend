@@ -1,7 +1,7 @@
 package kr.elroy.aigoya.order.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import kr.elroy.aigoya.order.Order;
+import kr.elroy.aigoya.order.domain.Order;
 import kr.elroy.aigoya.product.dto.response.ProductResponse;
 
 import java.util.List;
