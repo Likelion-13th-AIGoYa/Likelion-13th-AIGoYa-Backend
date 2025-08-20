@@ -1,3 +1,5 @@
 package kr.elroy.aigoya.ai.dto.request;
 
-public record AiChatRequest(String message) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record AiChatRequest(@NotBlank String message) {}
