@@ -1,6 +1,6 @@
 package kr.elroy.aigoya.product.controller;
 
-import kr.elroy.aigoya.product.api.ProductApi;
+import kr.elroy.aigoya.product.api.MyProductApi;
 import kr.elroy.aigoya.product.domain.Product;
 import kr.elroy.aigoya.product.dto.request.CreateProductRequest;
 import kr.elroy.aigoya.product.dto.request.UpdateProductRequest;
@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-public class ProductController implements ProductApi {
+public class MyProductController implements MyProductApi {
     private final ProductService productService;
 
     @Override
