@@ -47,7 +47,7 @@ public interface MyStoreApi {
             Long storeId
     );
 
-    @PutMapping("/v1/stores/me/password")
+    @PutMapping("/password")
     void updatePassword(
             @CurrentStoreId
             Long storeId,
