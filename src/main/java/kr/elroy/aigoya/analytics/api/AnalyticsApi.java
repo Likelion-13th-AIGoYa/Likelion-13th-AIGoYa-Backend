@@ -3,6 +3,8 @@ package kr.elroy.aigoya.analytics.api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.elroy.aigoya.analytics.dto.request.AnalysisPeriod;
+import kr.elroy.aigoya.analytics.dto.request.MenuAnalysisType;
 import kr.elroy.aigoya.analytics.dto.response.DailySummaryResponse;
 import kr.elroy.aigoya.analytics.dto.response.HourlySalesResponse;
 import kr.elroy.aigoya.analytics.dto.response.MenuAnalysisResponse;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Tag(name = "애널리틱스", description = "내 가게의 데이터 분석 API (인증 필요)")
 @RequestMapping("/v1/stores/me/analytics")
@@ -29,7 +32,7 @@ public interface AnalyticsApi {
 
     @GetMapping("/sales-by-hour")
     @Operation(summary = "시간대별 매출 분석", description = "특정 날짜의 시간대별 매출 분포를 조회합니다.")
-    HourlySalesResponse getSalesByHour(
+    List<HourlySalesResponse> getSalesByHour(
             @Parameter(hidden = true)
             @AuthenticationPrincipal(expression = "id") Long storeId,
             @Parameter(description = "조회할 날짜 (YYYY-MM-DD). 미입력 시 오늘 날짜.")
@@ -39,17 +42,17 @@ public interface AnalyticsApi {
 
     @GetMapping("/menu-analysis")
     @Operation(summary = "메뉴 분석 (인기/비인기)", description = "기간별 인기 또는 비인기 메뉴 순위를 조회합니다.")
-    MenuAnalysisResponse getMenuAnalysis(
+    List<MenuAnalysisResponse> getMenuAnalysis(
             @Parameter(hidden = true)
             @AuthenticationPrincipal(expression = "id") Long storeId,
 
-            @Parameter(description = "분석 타입 (top: 인기, bottom: 비인기)", required = true, example = "top")
-            @RequestParam String type,
+            @Parameter(description = "분석 타입 (TOP: 인기, BOTTOM: 비인기)", required = true, example = "TOP")
+            @RequestParam MenuAnalysisType type,
 
-            @Parameter(description = "조회 기간 (daily: 오늘, weekly: 이번 주)", required = true, example = "daily")
-            @RequestParam String period,
+            @Parameter(description = "조회 기간 (DAILY: 오늘, WEEKLY: 이번 주)", required = true, example = "DAILY")
+            @RequestParam AnalysisPeriod period,
 
-            @Parameter(description = "조회할 메뉴 개수", example = "5")
+            @Parameter(description = "조회할 메뉴 개수")
             @RequestParam(defaultValue = "5") int limit
     );
 }
