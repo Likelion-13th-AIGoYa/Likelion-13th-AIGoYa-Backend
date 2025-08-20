@@ -1,14 +1,13 @@
-package kr.elroy.aigoya.store.api;
+package kr.elroy.aigoya.store.controller;
 
-import jakarta.validation.Valid;
-import kr.elroy.aigoya.store.Store;
-import kr.elroy.aigoya.store.StoreService;
+import kr.elroy.aigoya.store.api.StoreApi;
+import kr.elroy.aigoya.store.domain.Store;
 import kr.elroy.aigoya.store.dto.request.CreateStoreRequest;
 import kr.elroy.aigoya.store.dto.request.LoginRequest;
 import kr.elroy.aigoya.store.dto.response.LoginResponse;
 import kr.elroy.aigoya.store.dto.response.StoreResponse;
+import kr.elroy.aigoya.store.service.StoreService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -17,19 +16,13 @@ public class StoreController implements StoreApi {
     private final StoreService storeService;
 
     @Override
-    public StoreResponse getStore(Long id) {
-        Store store = storeService.getStore(id);
-        return StoreResponse.of(store);
-    }
-
-    @Override
-    public StoreResponse createStore(@Valid @RequestBody CreateStoreRequest request) {
+    public StoreResponse createStore(CreateStoreRequest request) {
         Store store = storeService.createStore(request);
         return StoreResponse.of(store);
     }
 
     @Override
-    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         return storeService.login(request);
     }
 }

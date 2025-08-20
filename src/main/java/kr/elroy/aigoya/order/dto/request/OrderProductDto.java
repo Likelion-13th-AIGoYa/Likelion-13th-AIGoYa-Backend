@@ -1,0 +1,16 @@
+package kr.elroy.aigoya.order.dto.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+
+@Schema(description = "주문 상품 정보")
+public record OrderProductDto(
+        @Schema(description = "상품 ID", example = "1")
+        @NotNull
+        Long productId,
+
+        @Schema(description = "주문 수량", example = "2")
+        @NotNull
+        Integer quantity
+) {
+}

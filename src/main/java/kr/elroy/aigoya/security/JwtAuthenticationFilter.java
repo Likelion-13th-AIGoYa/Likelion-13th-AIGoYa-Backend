@@ -4,8 +4,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import kr.elroy.aigoya.store.Store;
-import kr.elroy.aigoya.store.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,13 +20,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenService jwtTokenService;
-    private final StoreRepository storeRepository;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-        
         String authHeader = request.getHeader("Authorization");
         String jwt = null;
         Long storeId = null;
@@ -37,26 +33,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             jwt = authHeader.substring(7);
             try {
                 storeId = jwtTokenService.extractStoreId(jwt);
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        storeId,
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_STORE"))
+                );
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             } catch (Exception e) {
                 filterChain.doFilter(request, response);
                 return;
             }
         }
 
-        if (storeId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            Store store = storeRepository.findById(storeId).orElse(null);
-            
-            if (store != null && jwtTokenService.isTokenValid(jwt)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        store,
-                        null,
-                        List.of(new SimpleGrantedAuthority("ROLE_STORE"))
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
-        }
-        
         filterChain.doFilter(request, response);
     }
 }

@@ -3,7 +3,7 @@ package kr.elroy.aigoya.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import kr.elroy.aigoya.store.Store;
+import kr.elroy.aigoya.store.domain.Store;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +30,6 @@ public class JwtTokenService {
         return Jwts.builder()
                 .subject(store.getId().toString())
                 .claim("storeId", store.getId())
-                .claim("storeName", store.getName())
-                .claim("email", store.getEmail())
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(getSigningKey())
@@ -49,16 +47,6 @@ public class JwtTokenService {
     public Long extractStoreId(String token) {
         Claims claims = extractClaims(token);
         return claims.get("storeId", Long.class);
-    }
-
-    public String extractStoreName(String token) {
-        Claims claims = extractClaims(token);
-        return claims.get("storeName", String.class);
-    }
-
-    public String extractEmail(String token) {
-        Claims claims = extractClaims(token);
-        return claims.get("email", String.class);
     }
 
     public boolean isTokenValid(String token) {
