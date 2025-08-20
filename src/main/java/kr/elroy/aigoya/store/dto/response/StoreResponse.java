@@ -21,7 +21,7 @@ public record StoreResponse(
         String address,
 
         @Schema(description = "일일 목표 매출", example = "1000000")
-        String dailyTarget
+        Long dailyTarget
 ) {
 
     public static StoreResponse of(Store store) {

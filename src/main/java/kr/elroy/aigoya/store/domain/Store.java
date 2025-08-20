@@ -43,9 +43,9 @@ public class Store {
     @Column(name = "phone", nullable = false)
     private String phone;
 
-    @Column(name = "address", nullable = false)
+    @Column(name = "address")
     private String address;
 
-    @Column(name = "dailyTarget", nullable = false)
-    private String dailyTarget;
+    @Column(name = "dailyTarget")
+    private Long dailyTarget;
 }

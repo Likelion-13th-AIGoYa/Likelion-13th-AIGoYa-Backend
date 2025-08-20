@@ -22,12 +22,10 @@ public record CreateStoreRequest(
         @Schema(description = "전화번호", example = "010-1234-5678")
         String phone,
 
-        @NotBlank(message = "주소는 필수입니다.")
-        @Schema(description = "가게 주소", example = "서울시 강남구 테헤란로 123")
+        @Schema(description = "가게 주소 (선택)", example = "서울시 강남구 테헤란로 123")
         String address,
 
-        @NotBlank(message = "일일 목표 매출은 필수입니다.")
-        @Schema(description = "일일 목표 매출", example = "1000000")
-        String dailyTarget
+        @Schema(description = "일일 목표 매출 (선택)", example = "1000000")
+        Long dailyTarget
 ) {
 }
