@@ -27,5 +27,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build and push image with Jib
+        env:
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
           chmod +x gradlew && ./gradlew jib
