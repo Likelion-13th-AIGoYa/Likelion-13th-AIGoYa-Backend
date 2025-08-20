@@ -1,29 +1,40 @@
 package kr.elroy.aigoya.ai.controller;
 
-import kr.elroy.aigoya.ai.dto.request.ReportRequest;
+import kr.elroy.aigoya.ai.dto.request.AiChatRequest;
 import kr.elroy.aigoya.ai.dto.response.ReportResponse;
 import kr.elroy.aigoya.ai.service.AiService;
-import org.springframework.web.bind.annotation.*;
+import kr.elroy.aigoya.security.CustomUserDetails;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/ai")
+@RequiredArgsConstructor
 public class AiController {
 
     private final AiService aiService;
 
-    public AiController(AiService aiService) {
-        this.aiService = aiService;
-    }
+    @PostMapping("/chat")
+    public ReportResponse chat(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody AiChatRequest request
+    ) {
+        Long storeId = userDetails.getStore().getId();
+        String message = request.message();
+        String result;
 
-    @PostMapping("/report")
-    public ReportResponse generateReport(@RequestBody ReportRequest request) {
-        String result = aiService.generateSalesReport(request.salesData());
-        return new ReportResponse(result);
-    }
+        if (message.contains("매출") || message.contains("보고서")) {
+            result = aiService.generateSalesReport(storeId);
+        } else if (message.contains("재고") || message.contains("예측")) {
+            result = aiService.predictInventory(storeId);
+        } else {
+            result = "죄송합니다, 요청을 이해하지 못했습니다. '매출 보고서' 또는 '재고 예측'이라고 말씀해주세요.";
+        }
 
-    @PostMapping("/inventory")
-    public ReportResponse predictInventory(@RequestBody ReportRequest request) {
-        String result = aiService.predictInventory(request.salesData());
         return new ReportResponse(result);
     }
 }
