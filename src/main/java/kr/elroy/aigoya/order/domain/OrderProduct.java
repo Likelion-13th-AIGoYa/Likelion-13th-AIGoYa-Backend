@@ -35,7 +35,4 @@ public class OrderProduct {
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
-
-    @Column(nullable = false)
-    private Long orderPrice;
 }
