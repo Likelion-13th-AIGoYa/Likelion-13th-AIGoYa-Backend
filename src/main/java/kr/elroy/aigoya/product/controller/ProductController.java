@@ -14,7 +14,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class ProductController implements ProductApi {
-
     private final ProductService productService;
 
     @Override
@@ -41,6 +40,7 @@ public class ProductController implements ProductApi {
         Product updatedProduct = productService.updateProduct(storeId, productId, request);
         return ProductResponse.from(updatedProduct);
     }
+    
     @Override
     public void deleteProduct(Long storeId, Long productId) {
         productService.deleteProduct(storeId, productId);

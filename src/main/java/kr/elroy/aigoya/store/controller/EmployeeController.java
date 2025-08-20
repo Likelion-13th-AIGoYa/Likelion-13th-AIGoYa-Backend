@@ -6,8 +6,11 @@ import kr.elroy.aigoya.store.dto.request.AddEmployeeRequest;
 import kr.elroy.aigoya.store.dto.response.EmployeeResponse;
 import kr.elroy.aigoya.store.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
 
+@RestController
 @RequiredArgsConstructor
 public class EmployeeController implements EmployeeApi {
 
