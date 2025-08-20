@@ -14,10 +14,6 @@ public record CreateProductRequest(
         @Schema(description = "상품 가격", example = "18000")
         @NotNull
         @Positive
-        Long price,
-
-        @Schema(description = "가게 ID", example = "1")
-        @NotNull
-        Long storeId
+        Long price
 ) {
 }
