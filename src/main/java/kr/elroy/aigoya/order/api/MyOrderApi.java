@@ -37,6 +37,7 @@ public interface MyOrderApi {
             @Parameter(description = "주문 ID", required = true, example = "1")
             @PathVariable
             Long id,
+
             @CurrentStoreId
             @Parameter(hidden = true)
             Long storeId
@@ -48,6 +49,7 @@ public interface MyOrderApi {
             @Valid
             @RequestBody
             CreateOrderRequest request,
+
             @CurrentStoreId
             @Parameter(hidden = true)
             Long storeId
@@ -59,9 +61,11 @@ public interface MyOrderApi {
             @Parameter(description = "주문 ID", required = true, example = "1")
             @PathVariable
             Long id,
+
             @Valid
             @RequestBody
             UpdateOrderRequest request,
+
             @CurrentStoreId
             @Parameter(hidden = true)
             Long storeId
@@ -73,6 +77,7 @@ public interface MyOrderApi {
             @Parameter(description = "주문 ID", required = true, example = "1")
             @PathVariable
             Long id,
+            
             @CurrentStoreId
             @Parameter(hidden = true)
             Long storeId

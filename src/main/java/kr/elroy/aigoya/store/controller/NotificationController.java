@@ -5,9 +5,11 @@ import kr.elroy.aigoya.store.domain.Notification;
 import kr.elroy.aigoya.store.dto.response.NotificationResponse;
 import kr.elroy.aigoya.store.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@RestController
 @RequiredArgsConstructor
 public class NotificationController implements NotificationApi {
 

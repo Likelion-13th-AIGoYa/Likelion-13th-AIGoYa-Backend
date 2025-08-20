@@ -9,7 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import kr.elroy.aigoya.store.Store;
+import kr.elroy.aigoya.store.domain.Store;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
