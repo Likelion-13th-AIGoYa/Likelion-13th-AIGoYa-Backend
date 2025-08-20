@@ -15,7 +15,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final StoreRepository storeRepository;
@@ -27,6 +26,7 @@ public class NotificationService {
         return notificationRepository.findByStoreOrderByCreatedAtDesc(store);
     }
 
+    @Transactional
     public void markAsRead(Long storeId, Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(NotificationNotFoundException::new);
@@ -38,6 +38,7 @@ public class NotificationService {
         notification.read();
     }
 
+    // TODO: 엔드포인트 추가 필요
     public Notification createNotification(Long storeId, String message) {
         Store store = storeRepository.findById(storeId).orElseThrow(StoreNotFoundException::new);
 

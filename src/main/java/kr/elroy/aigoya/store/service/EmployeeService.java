@@ -16,11 +16,11 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final StoreRepository storeRepository;
 
+    @Transactional
     public Employee addEmployee(Long storeId, AddEmployeeRequest request) {
         Store store = storeRepository.findById(storeId).orElseThrow(StoreNotFoundException::new);
 
@@ -37,10 +37,11 @@ public class EmployeeService {
     @Transactional(readOnly = true)
     public List<Employee> getEmployees(Long storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(StoreNotFoundException::new);
-        
+
         return employeeRepository.findByStore(store);
     }
 
+    @Transactional
     public void removeEmployee(Long storeId, Long employeeId) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(EmployeeNotFoundException::new);

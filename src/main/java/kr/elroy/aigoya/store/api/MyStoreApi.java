@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Validated
 @RequestMapping("/v1/stores/me")
 public interface MyStoreApi {
-
     @Operation(summary = "내 가게 정보 조회", description = "로그인한 사용자의 가게 정보를 조회합니다.")
     @GetMapping
     StoreResponse getMyStore(
@@ -49,7 +48,7 @@ public interface MyStoreApi {
     );
 
     @PutMapping("/v1/stores/me/password")
-    public void updatePassword(
+    void updatePassword(
             @CurrentStoreId
             Long storeId,
 
