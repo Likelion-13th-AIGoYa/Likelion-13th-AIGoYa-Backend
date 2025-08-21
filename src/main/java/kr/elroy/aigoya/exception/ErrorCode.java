@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCode {
     ACCESS_DENIED(403, "AUTH_0001", "접근 권한이 없습니다."),
 
+    // Analytics
+    INVALID_ANALYSIS_PARAMETER(400, "ANALYTICS_0001", "유효하지 않은 분석 파라미터입니다."),
+
     ORDER_NOT_FOUND(404, "ORDER_0001", "주문을 찾을 수 없습니다."),
 
     PRODUCT_NOT_FOUND(404, "PRODUCT_0001", "상품을 찾을 수 없습니다."),
