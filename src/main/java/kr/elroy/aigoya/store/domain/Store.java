@@ -28,24 +28,24 @@ public class Store {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
 
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "email", nullable = false, unique = true)
-    private String email;
-
-    @OneToMany(mappedBy = "store", orphanRemoval = true)
-    private List<Order> orders = new ArrayList<>();
-
     @Column(name = "phone", nullable = false)
     private String phone;
+
+    @Column(name = "name")
+    private String name;
 
     @Column(name = "address")
     private String address;
 
     @Column(name = "dailyTarget")
     private Long dailyTarget;
+
+    @OneToMany(mappedBy = "store", orphanRemoval = true)
+    private List<Order> orders = new ArrayList<>();
 }
