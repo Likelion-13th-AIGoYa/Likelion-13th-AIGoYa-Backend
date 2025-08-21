@@ -29,19 +29,12 @@ public class AiController {
 
         if (message.contains("매출") || message.contains("보고서")) {
             result = aiService.generateSalesReport(storeId);
-        // Define intent patterns
-        Pattern salesReportPattern = Pattern.compile(".*(매출.*보고서|보고서.*매출|매출|보고서).*");
-        Pattern inventoryPredictPattern = Pattern.compile(".*(재고.*예측|예측.*재고|재고|예측).*");
-
-        Matcher salesMatcher = salesReportPattern.matcher(message);
-        Matcher inventoryMatcher = inventoryPredictPattern.matcher(message);
-
-        if (salesMatcher.matches()) {
-            result = aiService.generateSalesReport(storeId);
-        } else if (inventoryMatcher.matches()) {
+        } else if (message.contains("재고") || message.contains("예측")) {
             result = aiService.predictInventory(storeId);
+        } else if (message.contains("마케팅") || message.contains("문구") || message.contains("메시지")) {
+            result = aiService.generateMarketingCopy(storeId, message);
         } else {
-            result = "죄송합니다, 요청을 이해하지 못했습니다. '매출 보고서' 또는 '재고 예측'이라고 말씀해주세요.";
+            result = "죄송합니다, 요청을 이해하지 못했습니다. '매출 보고서', '재고 예측', '마케팅 문구' 등으로 말씀해주세요.";
         }
 
         return new ReportResponse(result);

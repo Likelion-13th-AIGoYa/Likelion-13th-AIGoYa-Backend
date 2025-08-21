@@ -21,15 +21,18 @@ public class AiService {
     private final ChatClient chatClient;
     private final PromptTemplate salesReportTemplate;
     private final PromptTemplate inventoryPredictionTemplate;
+    private final PromptTemplate marketingCopyTemplate; // 1. 필드 추가
     private final OrderRepository orderRepository;
 
     public AiService(ChatClient.Builder chatClientBuilder,
                      @Value("classpath:/prompts/sales-report.st") Resource salesReportResource,
                      @Value("classpath:/prompts/inventory-prediction.st") Resource inventoryPredictionResource,
+                     @Value("classpath:/prompts/marketing-copy.st") Resource marketingCopyResource, // 2. 프롬프트 로드
                      OrderRepository orderRepository) {
         this.chatClient = chatClientBuilder.build();
         this.salesReportTemplate = new PromptTemplate(salesReportResource);
         this.inventoryPredictionTemplate = new PromptTemplate(inventoryPredictionResource);
+        this.marketingCopyTemplate = new PromptTemplate(marketingCopyResource); // 2. 프롬프트 초기화
         this.orderRepository = orderRepository;
     }
 
@@ -43,6 +46,12 @@ public class AiService {
         List<Order> orders = orderRepository.findAllByStoreId(storeId);
         String salesData = convertOrdersToSalesDataString(orders);
         return callAiModel(inventoryPredictionTemplate, Map.of("salesData", salesData), "재고 예측");
+    }
+
+    public String generateMarketingCopy(Long storeId, String userRequest) {
+        List<Order> orders = orderRepository.findAllByStoreId(storeId);
+        String salesData = convertOrdersToSalesDataString(orders);
+        return callAiModel(marketingCopyTemplate, Map.of("salesData", salesData, "request", userRequest), "마케팅 문구 생성");
     }
 
     private String callAiModel(PromptTemplate promptTemplate, Map<String, Object> params, String taskName) {
