@@ -12,6 +12,7 @@ import kr.elroy.aigoya.product.domain.Product;
 import kr.elroy.aigoya.product.exception.ProductNotFoundException;
 import kr.elroy.aigoya.product.repository.ProductRepository;
 import kr.elroy.aigoya.store.domain.Store;
+import kr.elroy.aigoya.store.repository.StoreRepository;
 import kr.elroy.aigoya.store.exception.StoreNotFoundException;
 import kr.elroy.aigoya.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
