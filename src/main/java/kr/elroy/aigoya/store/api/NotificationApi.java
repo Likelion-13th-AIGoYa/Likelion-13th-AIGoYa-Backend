@@ -2,9 +2,12 @@ package kr.elroy.aigoya.store.api;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.elroy.aigoya.store.config.CurrentStoreId;
 import kr.elroy.aigoya.store.dto.response.NotificationResponse;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
@@ -14,12 +17,18 @@ public interface NotificationApi {
 
     @GetMapping
     List<NotificationResponse> getNotifications(
-            @Parameter(hidden = true) @AuthenticationPrincipal(expression = "id") Long storeId
+            @Parameter(hidden = true)
+            @CurrentStoreId
+            Long storeId
     );
 
     @PostMapping("/{notificationId}/read")
     void markAsRead(
-            @Parameter(hidden = true) @AuthenticationPrincipal(expression = "id") Long storeId,
-            @PathVariable Long notificationId
+            @Parameter(hidden = true)
+            @CurrentStoreId
+            Long storeId,
+
+            @PathVariable
+            Long notificationId
     );
 }

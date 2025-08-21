@@ -6,6 +6,9 @@ import kr.elroy.aigoya.product.dto.request.CreateProductRequest;
 import kr.elroy.aigoya.product.dto.request.UpdateProductRequest;
 import kr.elroy.aigoya.store.domain.Store;
 import kr.elroy.aigoya.store.repository.StoreRepository;
+import kr.elroy.aigoya.store.exception.StoreNotFoundException;
+import kr.elroy.aigoya.product.exception.ProductNotFoundException;
+import kr.elroy.aigoya.exception.AccessDeniedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +24,7 @@ public class ProductService {
     private final StoreRepository storeRepository;
 
     public Product createProduct(Long storeId, CreateProductRequest request) {
-        Store store = storeRepository.findById(storeId).orElseThrow();
+        Store store = storeRepository.findById(storeId).orElseThrow(StoreNotFoundException::new);
         Product newProduct = Product.builder()
                 .name(request.name())
                 .price(request.price())
@@ -38,18 +41,18 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Product getProduct(Long storeId, Long productId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+                .orElseThrow(ProductNotFoundException::new);
         if (!product.getStore().getId().equals(storeId)) {
-            throw new SecurityException("자신의 가게 상품만 조회할 수 있습니다.");
+            throw new AccessDeniedException();
         }
 
         return product;
     }
 
     public Product updateProduct(Long storeId, Long productId, UpdateProductRequest request) {
-        Product product = productRepository.findById(productId).orElseThrow();
+        Product product = productRepository.findById(productId).orElseThrow(ProductNotFoundException::new);
         if (!product.getStore().getId().equals(storeId)) {
-            throw new SecurityException("자신의 가게 상품만 수정할 수 있습니다.");
+            throw new AccessDeniedException();
         }
         product.updateInfo(request.name(), request.price());
         return product;
@@ -57,10 +60,10 @@ public class ProductService {
 
     public void deleteProduct(Long storeId, Long productId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+                .orElseThrow(ProductNotFoundException::new);
 
         if (!product.getStore().getId().equals(storeId)) {
-            throw new SecurityException("자신의 가게 상품만 삭제할 수 있습니다.");
+            throw new AccessDeniedException();
         }
 
         productRepository.delete(product);
