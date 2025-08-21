@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class StoreService {
@@ -67,10 +67,18 @@ public class StoreService {
     public Store updateStore(Long storeId, UpdateStoreRequest request) {
         Store store = getStore(storeId);
 
-        store.setName(request.name());
-        store.setPhone(request.phone());
-        store.setAddress(request.address());
-        store.setDailyTarget(request.dailyTarget());
+        if (request.name() != null) {
+            store.setName(request.name());
+        }
+        if (request.phone() != null) {
+            store.setPhone(request.phone());
+        }
+        if (request.address() != null) {
+            store.setAddress(request.address());
+        }
+        if (request.dailyTarget() != null) {
+            store.setDailyTarget(request.dailyTarget());
+        }
 
         return store;
     }
