@@ -11,11 +11,11 @@ public record StoreResponse(
         @Schema(description = "가게 이메일", example = "me@elroy.kr")
         String email,
 
-        @Schema(description = "가게 이름", example = "Elroy Store")
-        String name,
-
         @Schema(description = "전화번호", example = "010-1234-5678")
         String phone,
+
+        @Schema(description = "가게 이름", example = "Elroy Store")
+        String name,
 
         @Schema(description = "가게 주소", example = "서울시 강남구 테헤란로 123")
         String address,
@@ -28,8 +28,8 @@ public record StoreResponse(
         return new StoreResponse(
                 store.getId(),
                 store.getEmail(),
-                store.getName(),
                 store.getPhone(),
+                store.getName(),
                 store.getAddress(),
                 store.getDailyTarget()
         );
