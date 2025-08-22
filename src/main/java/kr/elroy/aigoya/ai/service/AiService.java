@@ -107,7 +107,7 @@ public class AiService {
                 .map(order -> {
                     String productsInfo = order.getOrderProducts().stream()
                             .map(op -> String.format("  - Product: %s, Quantity: %d, Price: %d",
-                                    op.getProduct().getName(), op.getQuantity(), op.getProduct().getPrice()))
+                                    op.getProduct().getName(), op.getQuantity(), op.getOrderPrice()))
                             .collect(Collectors.joining("\n"));
                     return String.format("Order ID: %d, Store ID: %d, Ordered At: %s, Total Price: %d\n%s",
                             order.getId(), order.getStore().getId(), order.getOrderedAt(), order.getTotalPrice(), productsInfo);
