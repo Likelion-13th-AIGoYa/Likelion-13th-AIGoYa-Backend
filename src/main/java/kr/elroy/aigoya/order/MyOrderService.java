@@ -12,7 +12,6 @@ import kr.elroy.aigoya.product.domain.Product;
 import kr.elroy.aigoya.product.exception.ProductNotFoundException;
 import kr.elroy.aigoya.product.repository.ProductRepository;
 import kr.elroy.aigoya.store.domain.Store;
-import kr.elroy.aigoya.store.repository.StoreRepository;
 import kr.elroy.aigoya.store.exception.StoreNotFoundException;
 import kr.elroy.aigoya.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
@@ -90,13 +89,14 @@ public class MyOrderService {
                 .order(order)
                 .product(product)
                 .quantity(orderProductDto.quantity())
+                .orderPrice(product.getPrice())
                 .build();
     }
 
     private Long calculateTotalPrice(List<OrderProduct> orderProducts) {
         return orderProducts.stream()
                 .mapToLong(orderProduct ->
-                        orderProduct.getProduct().getPrice() * orderProduct.getQuantity()
+                        orderProduct.getOrderPrice() * orderProduct.getQuantity()
                 )
                 .sum();
     }

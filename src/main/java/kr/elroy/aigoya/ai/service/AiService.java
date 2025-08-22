@@ -2,14 +2,15 @@ package kr.elroy.aigoya.ai.service;
 
 import kr.elroy.aigoya.order.OrderRepository;
 import kr.elroy.aigoya.order.domain.Order;
-import kr.elroy.aigoya.order.domain.OrderProduct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,37 +22,69 @@ public class AiService {
     private final ChatClient chatClient;
     private final PromptTemplate salesReportTemplate;
     private final PromptTemplate inventoryPredictionTemplate;
-    private final PromptTemplate marketingCopyTemplate; // 1. 필드 추가
+    private final PromptTemplate marketingCopyTemplate;
+    private final PromptTemplate salesAnalysisByWeatherTemplate;
     private final OrderRepository orderRepository;
+    private final WeatherService weatherService;
 
     public AiService(ChatClient.Builder chatClientBuilder,
                      @Value("classpath:/prompts/sales-report.st") Resource salesReportResource,
                      @Value("classpath:/prompts/inventory-prediction.st") Resource inventoryPredictionResource,
-                     @Value("classpath:/prompts/marketing-copy.st") Resource marketingCopyResource, // 2. 프롬프트 로드
-                     OrderRepository orderRepository) {
+                     @Value("classpath:/prompts/marketing-copy.st") Resource marketingCopyResource,
+                     @Value("classpath:/prompts/sales-analysis-by-weather-prompt.st") Resource salesAnalysisByWeatherResource,
+                     OrderRepository orderRepository,
+                     WeatherService weatherService) {
         this.chatClient = chatClientBuilder.build();
         this.salesReportTemplate = new PromptTemplate(salesReportResource);
         this.inventoryPredictionTemplate = new PromptTemplate(inventoryPredictionResource);
-        this.marketingCopyTemplate = new PromptTemplate(marketingCopyResource); // 2. 프롬프트 초기화
+        this.marketingCopyTemplate = new PromptTemplate(marketingCopyResource);
+        this.salesAnalysisByWeatherTemplate = new PromptTemplate(salesAnalysisByWeatherResource);
         this.orderRepository = orderRepository;
+        this.weatherService = weatherService;
     }
 
-    public String generateSalesReport(Long storeId) {
-        List<Order> orders = orderRepository.findAllByStoreId(storeId);
-        String salesData = convertOrdersToSalesDataString(orders);
-        return callAiModel(salesReportTemplate, Map.of("salesData", salesData), "보고서 생성");
+    @Transactional(readOnly = true)
+    public String getCurrentWeather(Long storeId) {
+        return weatherService.getWeatherForStore(storeId, LocalDate.now());
     }
 
-    public String predictInventory(Long storeId) {
+    @Transactional(readOnly = true)
+    public String generateSalesReport(Long storeId, String chatHistory) {
         List<Order> orders = orderRepository.findAllByStoreId(storeId);
         String salesData = convertOrdersToSalesDataString(orders);
-        return callAiModel(inventoryPredictionTemplate, Map.of("salesData", salesData), "재고 예측");
+        return callAiModel(salesReportTemplate, Map.of("salesData", salesData, "chatHistory", chatHistory), "보고서 생성");
     }
 
-    public String generateMarketingCopy(Long storeId, String userRequest) {
+    @Transactional(readOnly = true)
+    public String predictInventory(Long storeId, String chatHistory) {
         List<Order> orders = orderRepository.findAllByStoreId(storeId);
         String salesData = convertOrdersToSalesDataString(orders);
-        return callAiModel(marketingCopyTemplate, Map.of("salesData", salesData, "request", userRequest), "마케팅 문구 생성");
+        return callAiModel(inventoryPredictionTemplate, Map.of("salesData", salesData, "chatHistory", chatHistory), "재고 예측");
+    }
+
+    @Transactional(readOnly = true)
+    public String generateMarketingCopy(Long storeId, String userRequest, String chatHistory) {
+        List<Order> orders = orderRepository.findAllByStoreId(storeId);
+        String salesData = convertOrdersToSalesDataString(orders);
+        return callAiModel(marketingCopyTemplate, Map.of("salesData", salesData, "request", userRequest, "chatHistory", chatHistory), "마케팅 문구 생성");
+    }
+
+    @Transactional(readOnly = true)
+    public String analyzeSalesByWeather(Long storeId, String chatHistory) {
+        List<Order> orders = orderRepository.findAllByStoreId(storeId);
+
+        String salesAndWeatherData = orders.stream()
+                .flatMap(order -> {
+                    String weather = weatherService.getWeatherForStore(storeId, order.getOrderedAt().toLocalDate());
+                    return order.getOrderProducts().stream()
+                            .map(op -> String.format("날짜: %s, 날씨: %s, 상품: %s, 수량: %d",
+                                    order.getOrderedAt().toLocalDate(), weather, op.getProduct().getName(), op.getQuantity()));
+                })
+                .collect(Collectors.joining("\n"));
+
+        log.info("Sales and Weather Data for AI Analysis:\n{}", salesAndWeatherData);
+
+        return callAiModel(salesAnalysisByWeatherTemplate, Map.of("salesAndWeatherData", salesAndWeatherData, "chatHistory", chatHistory), "날씨 기반 분석");
     }
 
     private String callAiModel(PromptTemplate promptTemplate, Map<String, Object> params, String taskName) {

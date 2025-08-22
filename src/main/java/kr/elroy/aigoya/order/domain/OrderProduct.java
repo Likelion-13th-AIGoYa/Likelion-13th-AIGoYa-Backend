@@ -14,10 +14,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
+@Setter
 @Builder
 @Entity(name = "order_product")
 public class OrderProduct {
@@ -35,4 +37,7 @@ public class OrderProduct {
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
+
+    @Column(name = "order_price", nullable = false)
+    private Long orderPrice;
 }
