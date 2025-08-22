@@ -14,6 +14,10 @@ public record CreateProductRequest(
         @Schema(description = "상품 가격", example = "18000")
         @NotNull
         @Positive
-        Long price
+        Long price,
+
+        @Schema(description = "카테고리 ID", example = "1")
+        @NotNull(message = "카테고리 ID는 필수입니다.")
+        Long categoryId
 ) {
 }
