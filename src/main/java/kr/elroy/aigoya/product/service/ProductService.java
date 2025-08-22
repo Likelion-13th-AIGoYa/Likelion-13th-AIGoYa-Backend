@@ -68,10 +68,13 @@ public class ProductService {
             throw new AccessDeniedException();
         }
 
-        Category category = categoryRepository.findById(request.categoryId())
-                .orElseThrow(CategoryNotFoundException::new);
-        if (!Objects.equals(category.getStore().getId(), storeId)) {
-            throw new CategoryNotFoundException();
+        Category category = null;
+        if (request.categoryId() != null) {
+            category = categoryRepository.findById(request.categoryId())
+                    .orElseThrow(CategoryNotFoundException::new);
+            if (!Objects.equals(category.getStore().getId(), storeId)) {
+                throw new CategoryNotFoundException();
+            }
         }
 
         product.updateInfo(request.name(), request.price(), category);

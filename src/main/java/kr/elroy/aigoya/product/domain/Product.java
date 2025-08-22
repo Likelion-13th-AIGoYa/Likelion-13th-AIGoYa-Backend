@@ -41,8 +41,14 @@ public class Product {
     private Category category;
 
     public void updateInfo(String name, Long price, Category category) {
-        this.name = name;
-        this.price = price;
-        this.category = category;
+        if (name != null) {
+            this.name = name;
+        }
+        if (price != null) {
+            this.price = price;
+        }
+        if (category != null) {
+            this.category = category;
+        }
     }
 }

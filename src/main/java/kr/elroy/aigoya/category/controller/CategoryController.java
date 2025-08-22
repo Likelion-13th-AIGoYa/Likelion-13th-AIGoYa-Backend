@@ -25,6 +25,13 @@ public class CategoryController implements CategoryApi {
     }
 
     @Override
+    public CategoryResponse getMyCategory(Long categoryId, Long storeId) {
+        Category category = categoryService.findCategoryById(storeId, categoryId);
+        return CategoryResponse.from(category);
+    }
+
+
+    @Override
     public CategoryResponse createMyCategory(CreateCategoryRequest request, Long storeId) {
         Category newCategory = categoryService.createCategory(storeId, request.name());
         return CategoryResponse.from(newCategory);
@@ -32,7 +39,7 @@ public class CategoryController implements CategoryApi {
 
     @Override
     public void updateMyCategory(Long categoryId, UpdateCategoryRequest request, Long storeId) {
-        categoryService.updateCategoryName(storeId, categoryId, request.name());
+        categoryService.updateCategory(storeId, categoryId, request.name());
     }
 
     @Override

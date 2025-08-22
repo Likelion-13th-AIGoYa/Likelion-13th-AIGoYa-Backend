@@ -44,33 +44,37 @@ public class CategoryService {
         return categoryRepository.findByStoreId(storeId);
     }
 
-    public void updateCategoryName(Long storeId, Long categoryId, String newName) {
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(CategoryNotFoundException::new);
+    @Transactional(readOnly = true)
+    public Category findCategoryById(Long storeId, Long categoryId) {
+        return getCategoryAndCheckOwnership(storeId, categoryId);
+    }
 
-        if (!Objects.equals(category.getStore().getId(), storeId)) {
-            throw new CategoryNotFoundException();
-        }
+    public void updateCategory(Long storeId, Long categoryId, String newName) {
+        Category category = getCategoryAndCheckOwnership(storeId, categoryId);
 
         if (!category.getName().equals(newName) && categoryRepository.existsByStoreIdAndName(storeId, newName)) {
             throw new CategoryNameAlreadyExistsException();
         }
 
-        category.updateName(newName);
+        category.update(newName);
     }
 
     public void deleteCategory(Long storeId, Long categoryId) {
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(CategoryNotFoundException::new);
-
-        if (!Objects.equals(category.getStore().getId(), storeId)) {
-            throw new CategoryNotFoundException();
-        }
+        Category category = getCategoryAndCheckOwnership(storeId, categoryId);
 
         if (productRepository.existsByCategoryId(categoryId)) {
             throw new CategoryInUseException();
         }
 
         categoryRepository.delete(category);
+    }
+
+    private Category getCategoryAndCheckOwnership(Long storeId, Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(CategoryNotFoundException::new);
+        if (!Objects.equals(category.getStore().getId(), storeId)) {
+            throw new CategoryNotFoundException();
+        }
+        return category;
     }
 }

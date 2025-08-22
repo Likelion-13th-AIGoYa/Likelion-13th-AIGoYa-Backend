@@ -31,6 +31,18 @@ public interface CategoryApi {
             Long storeId
     );
 
+    @Operation(summary = "나의 특정 카테고리 조회")
+    @GetMapping("/{categoryId}")
+    CategoryResponse getMyCategory(
+            @Parameter(description = "조회할 카테고리 ID", required = true)
+            @PathVariable
+            Long categoryId,
+
+            @CurrentStoreId
+            @Parameter(hidden = true)
+            Long storeId
+    );
+
     @Operation(summary = "나의 카테고리 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
