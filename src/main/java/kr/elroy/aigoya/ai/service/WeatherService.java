@@ -64,7 +64,11 @@ public class WeatherService {
     private String parseWeatherFromResponse(JsonNode response, String targetDate) {
         JsonNode items = response.path("response").path("body").path("items").path("item");
         if (!items.isArray()) {
-            log.warn("KMA API response format is not as expected or contains an error: {}", response.path("response").path("header").path("resultMsg").asText());
+            JsonNode header = response.path("response").path("header");
+            String resultCode = header.path("resultCode").asText();
+            String resultMsg = header.path("resultMsg").asText();
+            log.warn("KMA API response format is not as expected or contains an error. resultCode: {}, resultMsg: {}, header: {}",
+                    resultCode, resultMsg, header.toString());
             return "날씨 정보 없음";
         }
 
