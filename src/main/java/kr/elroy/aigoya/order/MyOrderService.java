@@ -89,13 +89,14 @@ public class MyOrderService {
                 .order(order)
                 .product(product)
                 .quantity(orderProductDto.quantity())
+                .orderPrice(product.getPrice())
                 .build();
     }
 
     private Long calculateTotalPrice(List<OrderProduct> orderProducts) {
         return orderProducts.stream()
                 .mapToLong(orderProduct ->
-                        orderProduct.getProduct().getPrice() * orderProduct.getQuantity()
+                        orderProduct.getOrderPrice() * orderProduct.getQuantity()
                 )
                 .sum();
     }
