@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import kr.elroy.aigoya.order.domain.Order;
 import kr.elroy.aigoya.product.dto.response.ProductResponse;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Schema(description = "주문 응답")
@@ -15,7 +16,10 @@ public record OrderResponse(
         Long totalPrice,
 
         @Schema(description = "주문 상품 목록")
-        List<OrderProductResponse> orderProducts
+        List<OrderProductResponse> orderProducts,
+
+        @Schema(description = "주문 시각", example = "2024-08-22T15:30:00")
+        LocalDateTime orderedAt
 ) {
     @Schema(description = "주문 상품 응답")
     public record OrderProductResponse(
@@ -38,7 +42,8 @@ public record OrderResponse(
         return new OrderResponse(
                 order.getId(),
                 order.getTotalPrice(),
-                orderProducts
+                orderProducts,
+                order.getOrderedAt()
         );
     }
 }
