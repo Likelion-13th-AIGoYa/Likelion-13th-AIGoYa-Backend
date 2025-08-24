@@ -83,7 +83,7 @@ public class WeatherService {
                 .orElseGet(() -> StreamSupport.stream(items.spliterator(), false)
                         .filter(item -> Objects.equals(item.path("fcstDate").asText(), targetDate))
                         .filter(item -> "SKY".equals(item.path("category").asText()))
-                        .filter(item -> "1200".equals(item.path("fcstTime").asText())) // 정오(12시) 하늘 상태 기준
+                        .filter(item -> "1200".equals(item.path("fcstTime").asText()))
                         .findFirst()
                         .map(item -> item.path("fcstValue").asInt())
                         .map(this::translateSkyCode)
