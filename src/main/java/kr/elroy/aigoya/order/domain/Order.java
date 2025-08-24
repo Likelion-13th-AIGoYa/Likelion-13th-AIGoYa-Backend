@@ -38,6 +38,7 @@ public class Order {
 
     @Setter(AccessLevel.NONE)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<OrderProduct> orderProducts = new ArrayList<>();
 
     @Column(name = "ordered_at", nullable = false)
