@@ -9,12 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 @Slf4j
@@ -123,6 +121,10 @@ public class WeatherService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid store Id: " + storeId));
 
         log.info("가게 날씨 조회: storeId={}, nx={}, ny={}", storeId, store.getNx(), store.getNy());
-        return getWeatherFor(date, store.getNx(), store.getNy());
+
+        int nx = store.getNx() != null ? store.getNx() : DEFAULT_NX;
+        int ny = store.getNy() != null ? store.getNy() : DEFAULT_NY;
+
+        return getWeatherFor(date, nx, ny);
     }
 }
