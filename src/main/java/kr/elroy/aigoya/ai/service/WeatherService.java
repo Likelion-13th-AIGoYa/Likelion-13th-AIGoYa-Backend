@@ -1,6 +1,7 @@
 package kr.elroy.aigoya.ai.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import kr.elroy.aigoya.analytics.dto.internal.WeatherInfo;
 import kr.elroy.aigoya.store.domain.Store;
 import kr.elroy.aigoya.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,14 +33,16 @@ public class WeatherService {
 
     private static final int DEFAULT_NX = 60;
     private static final int DEFAULT_NY = 127;
+    private static final String DEFAULT_WEATHER_SUMMARY = "정보 없음";
+    private static final Double DEFAULT_TEMPERATURE = null;
 
-    public String getWeatherFor(LocalDate date, int nx, int ny) {
+    public WeatherInfo getWeatherFor(LocalDate date, int nx, int ny) {
         String baseDate = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String baseTime = "0500";
 
         try {
             WebClient webClient = webClientBuilder.build();
-            Mono<JsonNode> responseMono = webClient.get()
+            JsonNode response = webClient.get()
                     .uri(apiUrl, uriBuilder -> uriBuilder
                             .queryParam("serviceKey", serviceKey)
                             .queryParam("pageNo", 1)
@@ -51,48 +54,49 @@ public class WeatherService {
                             .queryParam("ny", ny)
                             .build())
                     .retrieve()
-                    .bodyToMono(JsonNode.class);
+                    .bodyToMono(JsonNode.class)
+                    .block();
 
-            JsonNode response = responseMono.block();
             return parseWeatherFromResponse(response, baseDate);
         } catch (Exception e) {
-            log.error("Failed to fetch weather data for nx={}, ny={}", nx, ny, e);
-            return "날씨 정보 없음";
+            log.error("기상청 데이터 조회 실패. nx={}, ny={}", nx, ny, e);
+            return WeatherInfo.builder().summary(DEFAULT_WEATHER_SUMMARY).temperature(DEFAULT_TEMPERATURE).build();
         }
     }
 
-    private String parseWeatherFromResponse(JsonNode response, String targetDate) {
+    private WeatherInfo parseWeatherFromResponse(JsonNode response, String targetDate) {
         JsonNode items = response.path("response").path("body").path("items").path("item");
         if (!items.isArray()) {
             JsonNode header = response.path("response").path("header");
-            String resultCode = header.path("resultCode").asText();
-            String resultMsg = header.path("resultMsg").asText();
-            log.warn("KMA API response format is not as expected or contains an error. resultCode: {}, resultMsg: {}, header: {}",
-                    resultCode, resultMsg, header.toString());
-            return "날씨 정보 없음";
+            log.warn("KMA API 응답 형식이 잘못되었거나 오류가 포함됨. resultCode: {}, resultMsg: {}, header: {}",
+                    header.path("resultCode").asText(), header.path("resultMsg").asText(), header.toString());
+            return WeatherInfo.builder().summary(DEFAULT_WEATHER_SUMMARY).temperature(DEFAULT_TEMPERATURE).build();
         }
 
-        String precipitation = StreamSupport.stream(items.spliterator(), false)
+        String summary = StreamSupport.stream(items.spliterator(), false)
                 .filter(item -> Objects.equals(item.path("fcstDate").asText(), targetDate))
                 .filter(item -> "PTY".equals(item.path("category").asText()))
                 .map(item -> item.path("fcstValue").asInt())
                 .filter(ptyCode -> ptyCode > 0)
                 .findFirst()
                 .map(this::translatePtyCode)
-                .orElse(null);
+                .orElseGet(() -> StreamSupport.stream(items.spliterator(), false)
+                        .filter(item -> Objects.equals(item.path("fcstDate").asText(), targetDate))
+                        .filter(item -> "SKY".equals(item.path("category").asText()))
+                        .filter(item -> "1200".equals(item.path("fcstTime").asText()))
+                        .findFirst()
+                        .map(item -> item.path("fcstValue").asInt())
+                        .map(this::translateSkyCode)
+                        .orElse(DEFAULT_WEATHER_SUMMARY));
 
-        if (precipitation != null) {
-            return precipitation;
-        }
-
-        return StreamSupport.stream(items.spliterator(), false)
+        Double temperature = StreamSupport.stream(items.spliterator(), false)
                 .filter(item -> Objects.equals(item.path("fcstDate").asText(), targetDate))
-                .filter(item -> "SKY".equals(item.path("category").asText()))
-                .filter(item -> "1200".equals(item.path("fcstTime").asText()))
+                .filter(item -> "T1H".equals(item.path("category").asText()))
                 .findFirst()
-                .map(item -> item.path("fcstValue").asInt())
-                .map(this::translateSkyCode)
-                .orElse("맑음");
+                .map(item -> item.path("fcstValue").asDouble())
+                .orElse(DEFAULT_TEMPERATURE);
+
+        return WeatherInfo.builder().summary(summary).temperature(temperature).build();
     }
 
     private String translatePtyCode(int code) {
@@ -114,14 +118,11 @@ public class WeatherService {
         };
     }
 
-    public String getWeatherForStore(Long storeId, LocalDate date) {
-        Optional<Store> storeOptional = storeRepository.findById(storeId);
+    public WeatherInfo getWeatherForStore(Long storeId, LocalDate date) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid store Id: " + storeId));
 
-        int nx = storeOptional.map(Store::getNx).orElse(DEFAULT_NX);
-        int ny = storeOptional.map(Store::getNy).orElse(DEFAULT_NY);
-
-        log.info("Fetching weather for storeId: {} (nx={}, ny={})", storeId, nx, ny);
-
-        return getWeatherFor(date, nx, ny);
+        log.info("가게 날씨 조회: storeId={}, nx={}, ny={}", storeId, store.getNx(), store.getNy());
+        return getWeatherFor(date, store.getNx(), store.getNy());
     }
 }

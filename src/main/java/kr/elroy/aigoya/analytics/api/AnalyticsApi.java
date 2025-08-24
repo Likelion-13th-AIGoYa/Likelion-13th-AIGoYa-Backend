@@ -2,12 +2,17 @@ package kr.elroy.aigoya.analytics.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.elroy.aigoya.ai.dto.response.WeatherInfoResponse;
 import kr.elroy.aigoya.analytics.dto.request.AnalysisPeriod;
 import kr.elroy.aigoya.analytics.dto.request.MenuAnalysisType;
 import kr.elroy.aigoya.analytics.dto.response.DailySummaryResponse;
 import kr.elroy.aigoya.analytics.dto.response.HourlySalesResponse;
 import kr.elroy.aigoya.analytics.dto.response.MenuAnalysisResponse;
+import kr.elroy.aigoya.dto.ErrorResponse;
 import kr.elroy.aigoya.store.config.CurrentStoreId;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
@@ -66,5 +71,15 @@ public interface AnalyticsApi {
             @Parameter(description = "조회할 메뉴 개수")
             @RequestParam(defaultValue = "5")
             Integer limit
+    );
+
+    @Operation(summary = "메인 화면 날씨 기반 분석 조회", description = "로그인한 사용자의 가게 위치를 기반으로 날씨 정보와 판매 동향 분석을 조회합니다. 이 API의 응답은 3시간 동안 캐시됩니다.")
+    @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = WeatherInfoResponse.class)))
+    @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @GetMapping("/weather")
+    WeatherInfoResponse getWeatherAnalytics(
+            @CurrentStoreId
+            @Parameter(hidden = true)
+            Long storeId
     );
 }
