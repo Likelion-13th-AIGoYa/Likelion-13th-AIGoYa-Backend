@@ -3,7 +3,7 @@ package kr.elroy.aigoya.analytics.service;
 import kr.elroy.aigoya.ai.dto.response.WeatherInfoResponse;
 import kr.elroy.aigoya.ai.service.AiService;
 import kr.elroy.aigoya.ai.service.WeatherService;
-import kr.elroy.aigoya.analytics.dto.internal.WeatherInfo; // ★★★ [수정] internal 패키지로 경로 변경
+import kr.elroy.aigoya.analytics.dto.internal.WeatherInfo;
 import kr.elroy.aigoya.analytics.dto.internal.DailySummaryRawDto;
 import kr.elroy.aigoya.analytics.dto.request.AnalysisPeriod;
 import kr.elroy.aigoya.analytics.dto.request.MenuAnalysisType;
