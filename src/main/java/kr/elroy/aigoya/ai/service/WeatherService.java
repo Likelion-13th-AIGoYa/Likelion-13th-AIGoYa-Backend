@@ -1,7 +1,7 @@
 package kr.elroy.aigoya.ai.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import kr.elroy.aigoya.analytics.dto.internal.WeatherInfo; // ★★★ [수정] internal 패키지로 경로 변경
+import kr.elroy.aigoya.analytics.dto.internal.WeatherInfo;
 import kr.elroy.aigoya.store.domain.Store;
 import kr.elroy.aigoya.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
