@@ -1,5 +1,8 @@
 package kr.elroy.aigoya.analytics.service;
 
+import kr.elroy.aigoya.ai.dto.response.WeatherInfoResponse;
+import kr.elroy.aigoya.ai.service.AiService;
+import kr.elroy.aigoya.ai.service.WeatherService;
 import kr.elroy.aigoya.analytics.dto.internal.DailySummaryRawDto;
 import kr.elroy.aigoya.analytics.dto.request.AnalysisPeriod;
 import kr.elroy.aigoya.analytics.dto.request.MenuAnalysisType;
@@ -8,7 +11,10 @@ import kr.elroy.aigoya.analytics.dto.response.HourlySalesResponse;
 import kr.elroy.aigoya.analytics.dto.response.MenuAnalysisResponse;
 import kr.elroy.aigoya.analytics.exception.InvalidAnalysisParameterException;
 import kr.elroy.aigoya.analytics.repository.AnalyticsRepository;
+import kr.elroy.aigoya.common.weather.dto.WeatherInfo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,6 +30,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -32,6 +39,25 @@ public class AnalyticsService {
     private static final int MAX_MENU_ANALYSIS_LIMIT = 50;
 
     private final AnalyticsRepository analyticsRepository;
+    private final WeatherService weatherService;
+    private final AiService aiService;
+
+    @Cacheable(value = "weatherAnalytics", key = "#storeId")
+    public WeatherInfoResponse getWeatherAnalytics(Long storeId) {
+        log.info("캐시된 데이터가 없어 새로운 날씨 기반 분석 정보를 생성합니다. storeId: {}", storeId);
+
+        // 1. WeatherService를 사용하여 실제 날씨와 온도 정보를 가져옵니다. (★★★ [수정] ★★★)
+        WeatherInfo weatherInfo = weatherService.getWeatherForStore(storeId, LocalDate.now());
+        String weatherSummary = weatherInfo.summary();
+        Double temperature = weatherInfo.temperature();
+
+        // 2. 날씨 정보를 기반으로 AI에게 판매 동향 분석을 요청합니다.
+        String weatherDataForAi = String.format("현재 날씨: %s, 기온: %.1f도", weatherSummary, temperature);
+        String salesTrendInsight = aiService.generateWeatherBasedSalesTrend(storeId, weatherDataForAi);
+
+        // 3. 최종 응답으로 조합하여 반환합니다.
+        return new WeatherInfoResponse(temperature, weatherSummary, salesTrendInsight);
+    }
 
     public DailySummaryResponse getDailySummary(Long storeId, LocalDate date) {
         LocalDate targetDate = (date == null) ? LocalDate.now() : date;

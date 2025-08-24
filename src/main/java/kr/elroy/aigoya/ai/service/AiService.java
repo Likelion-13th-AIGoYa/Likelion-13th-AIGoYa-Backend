@@ -1,5 +1,6 @@
 package kr.elroy.aigoya.ai.service;
 
+import kr.elroy.aigoya.common.weather.dto.WeatherInfo;
 import kr.elroy.aigoya.order.OrderRepository;
 import kr.elroy.aigoya.order.domain.Order;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -24,6 +26,7 @@ public class AiService {
     private final PromptTemplate inventoryPredictionTemplate;
     private final PromptTemplate marketingCopyTemplate;
     private final PromptTemplate salesAnalysisByWeatherTemplate;
+    private final PromptTemplate weatherSalesTrendTemplate;
     private final OrderRepository orderRepository;
     private final WeatherService weatherService;
 
@@ -32,6 +35,7 @@ public class AiService {
                      @Value("classpath:/prompts/inventory-prediction.st") Resource inventoryPredictionResource,
                      @Value("classpath:/prompts/marketing-copy.st") Resource marketingCopyResource,
                      @Value("classpath:/prompts/sales-analysis-by-weather-prompt.st") Resource salesAnalysisByWeatherResource,
+                     @Value("classpath:/prompts/weather-sales-trend-prompt.st") Resource weatherSalesTrendResource,
                      OrderRepository orderRepository,
                      WeatherService weatherService) {
         this.chatClient = chatClientBuilder.build();
@@ -39,13 +43,23 @@ public class AiService {
         this.inventoryPredictionTemplate = new PromptTemplate(inventoryPredictionResource);
         this.marketingCopyTemplate = new PromptTemplate(marketingCopyResource);
         this.salesAnalysisByWeatherTemplate = new PromptTemplate(salesAnalysisByWeatherResource);
+        this.weatherSalesTrendTemplate = new PromptTemplate(weatherSalesTrendResource);
         this.orderRepository = orderRepository;
         this.weatherService = weatherService;
     }
 
     @Transactional(readOnly = true)
+    public String generateWeatherBasedSalesTrend(Long storeId, String weatherData) {
+        List<Order> orders = orderRepository.findAllByStoreId(storeId);
+        String salesData = convertOrdersToSalesDataString(orders);
+        return callAiModel(weatherSalesTrendTemplate, Map.of("weatherData", weatherData, "salesData", salesData), "판매 동향 분석");
+    }
+
+    // ★★★ [수정] 반환 타입을 String으로 되돌리고, WeatherInfo 객체에서 summary만 추출하여 반환
+    @Transactional(readOnly = true)
     public String getCurrentWeather(Long storeId) {
-        return weatherService.getWeatherForStore(storeId, LocalDate.now());
+        WeatherInfo weatherInfo = weatherService.getWeatherForStore(storeId, LocalDate.now());
+        return weatherInfo.summary();
     }
 
     @Transactional(readOnly = true)
@@ -69,14 +83,17 @@ public class AiService {
         return callAiModel(marketingCopyTemplate, Map.of("salesData", salesData, "request", userRequest, "chatHistory", chatHistory), "마케팅 문구 생성");
     }
 
+    // ★★★ [수정] WeatherInfo 객체를 받아서 처리하도록 수정
     @Transactional(readOnly = true)
     public String analyzeSalesByWeather(Long storeId, String chatHistory) {
         List<Order> orders = orderRepository.findAllByStoreId(storeId);
 
         String salesAndWeatherData = orders.stream()
                 .flatMap(order -> {
-                    String weather = weatherService.getWeatherForStore(storeId, order.getOrderedAt().toLocalDate());
+                    WeatherInfo weatherInfo = weatherService.getWeatherForStore(storeId, order.getOrderedAt().toLocalDate());
+                    String weather = weatherInfo.summary(); // WeatherInfo 객체에서 날씨 요약 정보 추출
                     return order.getOrderProducts().stream()
+                            .filter(op -> op.getProduct() != null) // 안전장치
                             .map(op -> String.format("날짜: %s, 날씨: %s, 상품: %s, 수량: %d",
                                     order.getOrderedAt().toLocalDate(), weather, op.getProduct().getName(), op.getQuantity()));
                 })
@@ -106,12 +123,19 @@ public class AiService {
         return orders.stream()
                 .map(order -> {
                     String productsInfo = order.getOrderProducts().stream()
+                            .filter(op -> op.getProduct() != null)
                             .map(op -> String.format("  - Product: %s, Quantity: %d, Price: %d",
                                     op.getProduct().getName(), op.getQuantity(), op.getOrderPrice()))
                             .collect(Collectors.joining("\n"));
+
+                    if (productsInfo.isEmpty()) {
+                        return null;
+                    }
+
                     return String.format("Order ID: %d, Store ID: %d, Ordered At: %s, Total Price: %d\n%s",
                             order.getId(), order.getStore().getId(), order.getOrderedAt(), order.getTotalPrice(), productsInfo);
                 })
+                .filter(Objects::nonNull)
                 .collect(Collectors.joining("\n\n"));
     }
 }
