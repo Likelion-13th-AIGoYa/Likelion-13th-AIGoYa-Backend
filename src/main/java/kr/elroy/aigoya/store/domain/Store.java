@@ -46,6 +46,12 @@ public class Store {
     @Column(name = "dailyTarget")
     private Long dailyTarget;
 
+    @Column(name = "nx")
+    private Integer nx;
+
+    @Column(name = "ny")
+    private Integer ny;
+
     @OneToMany(mappedBy = "store", orphanRemoval = true)
     @Builder.Default
     private List<Order> orders = new ArrayList<>();

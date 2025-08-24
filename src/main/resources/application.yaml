@@ -1,3 +1,14 @@
 spring:
   application:
     name: aigoya-backend
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4.1-nano-2025-04-14
+
+kma:
+  api:
+    service-key: ${KMA_API_SERVICE_KEY}
+    url: "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst"
