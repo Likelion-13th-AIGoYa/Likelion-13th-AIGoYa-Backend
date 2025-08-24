@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.stream.StreamSupport;
@@ -71,8 +72,11 @@ public class WeatherService {
             return WeatherInfo.builder().summary(DEFAULT_WEATHER_SUMMARY).temperature(DEFAULT_TEMPERATURE).build();
         }
 
+        String currentHour = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH00"));
+
         String summary = StreamSupport.stream(items.spliterator(), false)
                 .filter(item -> Objects.equals(item.path("fcstDate").asText(), targetDate))
+                .filter(item -> currentHour.equals(item.path("fcstTime").asText()))
                 .filter(item -> "PTY".equals(item.path("category").asText()))
                 .map(item -> item.path("fcstValue").asInt())
                 .filter(ptyCode -> ptyCode > 0)
@@ -80,8 +84,8 @@ public class WeatherService {
                 .map(this::translatePtyCode)
                 .orElseGet(() -> StreamSupport.stream(items.spliterator(), false)
                         .filter(item -> Objects.equals(item.path("fcstDate").asText(), targetDate))
+                        .filter(item -> currentHour.equals(item.path("fcstTime").asText()))
                         .filter(item -> "SKY".equals(item.path("category").asText()))
-                        .filter(item -> "1200".equals(item.path("fcstTime").asText()))
                         .findFirst()
                         .map(item -> item.path("fcstValue").asInt())
                         .map(this::translateSkyCode)
@@ -89,10 +93,12 @@ public class WeatherService {
 
         Double temperature = StreamSupport.stream(items.spliterator(), false)
                 .filter(item -> Objects.equals(item.path("fcstDate").asText(), targetDate))
-                .filter(item -> "T1H".equals(item.path("category").asText()))
+                .filter(item -> currentHour.equals(item.path("fcstTime").asText()))
+                .filter(item -> "TMP".equals(item.path("category").asText()))
                 .findFirst()
                 .map(item -> item.path("fcstValue").asDouble())
                 .orElse(DEFAULT_TEMPERATURE);
+
 
         return WeatherInfo.builder().summary(summary).temperature(temperature).build();
     }
@@ -120,10 +126,16 @@ public class WeatherService {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid store Id: " + storeId));
 
-        log.info("가게 날씨 조회: storeId={}, nx={}, ny={}", storeId, store.getNx(), store.getNy());
+        Integer nx = store.getNx();
+        Integer ny = store.getNy();
 
-        int nx = store.getNx() != null ? store.getNx() : DEFAULT_NX;
-        int ny = store.getNy() != null ? store.getNy() : DEFAULT_NY;
+        if (nx == null || ny == null) {
+            log.warn("가게에 좌표 정보(nx, ny)가 없습니다. 기본값(서울)으로 날씨를 조회합니다. storeId: {}", storeId);
+            nx = DEFAULT_NX;
+            ny = DEFAULT_NY;
+        }
+
+        log.info("가게 날씨 조회: storeId={}, nx={}, ny={}", storeId, nx, ny);
 
         return getWeatherFor(date, nx, ny);
     }
