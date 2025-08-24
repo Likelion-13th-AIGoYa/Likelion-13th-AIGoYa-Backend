@@ -35,11 +35,13 @@ public class AgentService {
     private final PromptTemplate routerPromptTemplate;
     private final PromptTemplate finalSynthesisPromptTemplate;
     private final PromptTemplate summaryPromptTemplate;
+    private final PromptTemplate generalConversationPromptTemplate;
 
     public AgentService(AiService aiService, StoreRepository storeRepository, ChatMessageRepository chatMessageRepository, ChatClient.Builder chatClientBuilder,
                         @Value("classpath:/prompts/ai-router-prompt.st") Resource routerResource,
                         @Value("classpath:/prompts/final-synthesis-prompt.st") Resource finalSynthesisResource,
-                        @Value("classpath:/prompts/history-summary-prompt.st") Resource summaryResource) {
+                        @Value("classpath:/prompts/history-summary-prompt.st") Resource summaryResource,
+                        @Value("classpath:/prompts/general-conversation-prompt.st") Resource generalConversationResource) {
         this.aiService = aiService;
         this.storeRepository = storeRepository;
         this.chatMessageRepository = chatMessageRepository;
@@ -47,6 +49,7 @@ public class AgentService {
         this.routerPromptTemplate = new PromptTemplate(routerResource);
         this.finalSynthesisPromptTemplate = new PromptTemplate(finalSynthesisResource);
         this.summaryPromptTemplate = new PromptTemplate(summaryResource);
+        this.generalConversationPromptTemplate = new PromptTemplate(generalConversationResource);
     }
 
     public String chat(Long storeId, String userMessage) {
@@ -61,22 +64,25 @@ public class AgentService {
         log.info("Chat history summarized: {}", historySummary);
 
         String routerInput = historySummary + "\nUSER: " + userMessage;
-        String[] toolNames = getRouteFromAi(routerInput).split(",");
-        log.info("AI Router selected tool(s): {}", (Object) toolNames);
+        String route = getRouteFromAi(routerInput);
+        log.info("AI Router selected tool: {}", route);
 
         String finalResponse;
 
-        if (toolNames.length > 0 && !toolNames[0].equals("CHAT")) {
+        if ("CHAT".equals(route)) {
+            finalResponse = chatClient.prompt(generalConversationPromptTemplate.create(Map.of("chatHistory", routerInput)))
+                    .call()
+                    .content();
+        } else if (route.isBlank()) {
+            finalResponse = "죄송합니다, 요청을 이해하지 못했습니다. '매출 보고서', '재고 예측', '마케팅 문구' 등으로 말씀해주세요.";
+        } else {
+            String[] toolNames = route.split(",");
             Map<String, String> toolResults = new HashMap<>();
             for (String toolName : toolNames) {
                 String result = executeTool(toolName.trim(), storeId, userMessage, historySummary);
                 toolResults.put(toolName.trim(), result);
             }
-
             finalResponse = synthesizeFinalResponse(historySummary, toolResults);
-
-        } else {
-            finalResponse = "죄송합니다, 요청을 이해하지 못했습니다. '매출 보고서', '재고 예측', '마케팅 문구' 등으로 말씀해주세요.";
         }
 
         saveMessage(store, ChatRole.AI, finalResponse);
