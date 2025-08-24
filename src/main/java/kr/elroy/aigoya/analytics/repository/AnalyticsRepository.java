@@ -35,11 +35,11 @@ public interface AnalyticsRepository extends JpaRepository<Order, Long> {
             @Param("endOfDay") LocalDateTime endOfDay
     );
 
-    @Query(value = "SELECT new kr.elroy.aigoya.analytics.dto.response.MenuAnalysisResponse(p.name, SUM(op.quantity), SUM(op.quantity * p.price)) " +
+    @Query(value = "SELECT new kr.elroy.aigoya.analytics.dto.response.MenuAnalysisResponse(p.name, p.category.name, SUM(op.quantity), SUM(op.orderPrice)) " +
             "FROM order_product op JOIN op.product p JOIN op.order o " +
             "WHERE o.store.id = :storeId AND o.orderedAt >= :startDate AND o.orderedAt < :endDate " +
-            "GROUP BY p.id, p.name " +
-            "ORDER BY SUM(op.quantity) DESC, SUM(op.quantity * p.price) DESC")
+            "GROUP BY p.id, p.name, p.category.name " +
+            "ORDER BY SUM(op.quantity) DESC, SUM(op.orderPrice) DESC")
     Page<MenuAnalysisResponse> findMenuAnalysisTop(
             @Param("storeId") Long storeId,
             @Param("startDate") LocalDateTime startDate,
@@ -47,11 +47,11 @@ public interface AnalyticsRepository extends JpaRepository<Order, Long> {
             Pageable pageable
     );
 
-    @Query(value = "SELECT new kr.elroy.aigoya.analytics.dto.response.MenuAnalysisResponse(p.name, SUM(op.quantity), SUM(op.quantity * p.price)) " +
+    @Query(value = "SELECT new kr.elroy.aigoya.analytics.dto.response.MenuAnalysisResponse(p.name, p.category.name, SUM(op.quantity), SUM(op.orderPrice)) " +
             "FROM order_product op JOIN op.product p JOIN op.order o " +
             "WHERE o.store.id = :storeId AND o.orderedAt >= :startDate AND o.orderedAt < :endDate " +
-            "GROUP BY p.id, p.name " +
-            "ORDER BY SUM(op.quantity) ASC, SUM(op.quantity * p.price) ASC")
+            "GROUP BY p.id, p.name, p.category.name " +
+            "ORDER BY SUM(op.quantity) ASC, SUM(op.orderPrice) ASC")
     Page<MenuAnalysisResponse> findMenuAnalysisBottom(
             @Param("storeId") Long storeId,
             @Param("startDate") LocalDateTime startDate,
