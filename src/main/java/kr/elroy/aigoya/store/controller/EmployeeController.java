@@ -17,18 +17,13 @@ public class EmployeeController implements EmployeeApi {
     private final EmployeeService employeeService;
 
     @Override
-    public EmployeeResponse addEmployee(
-            Long storeId,
-            AddEmployeeRequest request
-    ) {
-        Employee employee = employeeService.addEmployee(storeId, request);
+    public EmployeeResponse createEmployee(Long storeId, AddEmployeeRequest request) {
+        Employee employee = employeeService.createEmployee(storeId, request);
         return EmployeeResponse.of(employee);
     }
 
     @Override
-    public List<EmployeeResponse> getEmployees(
-            Long storeId
-    ) {
+    public List<EmployeeResponse> getEmployees(Long storeId) {
         List<Employee> employees = employeeService.getEmployees(storeId);
         return employees.stream()
                 .map(EmployeeResponse::of)
@@ -36,10 +31,12 @@ public class EmployeeController implements EmployeeApi {
     }
 
     @Override
-    public void removeEmployee(
-            Long storeId,
-            Long employeeId
-    ) {
+    public void updateEmployee(Long storeId, Long employeeId, AddEmployeeRequest request) {
+        employeeService.updateEmployee(storeId, employeeId, request);
+    }
+
+    @Override
+    public void removeEmployee(Long storeId, Long employeeId) {
         employeeService.removeEmployee(storeId, employeeId);
     }
 }

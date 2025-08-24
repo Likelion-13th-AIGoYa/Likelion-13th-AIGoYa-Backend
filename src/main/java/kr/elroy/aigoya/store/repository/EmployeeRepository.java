@@ -9,4 +9,6 @@ import java.util.List;
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     List<Employee> findByStore(Store store);
+
+    List<Employee> findByStoreId(Long storeId);
 }

@@ -12,16 +12,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class EmployeeService {
+
     private final EmployeeRepository employeeRepository;
     private final StoreRepository storeRepository;
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
-    @Transactional
-    public Employee addEmployee(Long storeId, AddEmployeeRequest request) {
+    public Employee createEmployee(Long storeId, AddEmployeeRequest request) {
         Store store = storeRepository.findById(storeId).orElseThrow(StoreNotFoundException::new);
 
         Employee employee = Employee.builder()
@@ -29,6 +34,9 @@ public class EmployeeService {
                 .role(request.role())
                 .hourlyWage(request.hourlyWage())
                 .store(store)
+                .workStartTime(parseTime(request.workStartTime()))
+                .workEndTime(parseTime(request.workEndTime()))
+                .workDays(request.workDays())
                 .build();
 
         return employeeRepository.save(employee);
@@ -36,20 +44,45 @@ public class EmployeeService {
 
     @Transactional(readOnly = true)
     public List<Employee> getEmployees(Long storeId) {
-        Store store = storeRepository.findById(storeId).orElseThrow(StoreNotFoundException::new);
-
-        return employeeRepository.findByStore(store);
+        if (!storeRepository.existsById(storeId)) {
+            throw new StoreNotFoundException();
+        }
+        return employeeRepository.findByStoreId(storeId);
     }
 
-    @Transactional
+    public void updateEmployee(Long storeId, Long employeeId, AddEmployeeRequest request) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(EmployeeNotFoundException::new);
+
+        if (!Objects.equals(employee.getStore().getId(), storeId)) {
+            throw new AccessDeniedException();
+        }
+
+        employee.updateInfo(
+                request.name(),
+                request.role(),
+                request.hourlyWage(),
+                parseTime(request.workStartTime()),
+                parseTime(request.workEndTime()),
+                request.workDays()
+        );
+    }
+
     public void removeEmployee(Long storeId, Long employeeId) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(EmployeeNotFoundException::new);
 
-        if (!employee.getStore().getId().equals(storeId)) {
+        if (!Objects.equals(employee.getStore().getId(), storeId)) {
             throw new AccessDeniedException();
         }
 
         employeeRepository.delete(employee);
+    }
+
+    private LocalTime parseTime(String timeString) {
+        if (timeString == null || timeString.isBlank()) {
+            return null;
+        }
+        return LocalTime.parse(timeString, TIME_FORMATTER);
     }
 }
