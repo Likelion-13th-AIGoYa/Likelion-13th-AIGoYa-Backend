@@ -47,5 +47,6 @@ public class Store {
     private Long dailyTarget;
 
     @OneToMany(mappedBy = "store", orphanRemoval = true)
+    @Builder.Default
     private List<Order> orders = new ArrayList<>();
 }
