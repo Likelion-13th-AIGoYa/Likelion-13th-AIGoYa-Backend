@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 
-@EnableCaching // ★★★ [추가] 캐싱 기능 활성화
+@EnableCaching
 @SpringBootApplication
 public class AigoyaApplication {
 
