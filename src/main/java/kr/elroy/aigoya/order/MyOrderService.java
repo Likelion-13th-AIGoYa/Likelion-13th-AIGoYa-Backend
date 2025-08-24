@@ -108,7 +108,8 @@ public class MyOrderService {
                 .collect(Collectors.toList());
 
         order.setTotalPrice(calculateTotalPrice(newOrderProducts));
-        order.setOrderProducts(newOrderProducts);
+        order.getOrderProducts().clear();
+        order.getOrderProducts().addAll(newOrderProducts);
     }
 
     private void validateOrderOwnership(Long currentStoreId, Order order) {
