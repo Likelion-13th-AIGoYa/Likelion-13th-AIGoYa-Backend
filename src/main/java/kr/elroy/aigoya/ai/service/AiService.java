@@ -1,6 +1,6 @@
 package kr.elroy.aigoya.ai.service;
 
-import kr.elroy.aigoya.common.weather.dto.WeatherInfo;
+import kr.elroy.aigoya.analytics.dto.internal.WeatherInfo; // ★★★ [수정] internal 패키지로 경로 변경
 import kr.elroy.aigoya.order.OrderRepository;
 import kr.elroy.aigoya.order.domain.Order;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +55,6 @@ public class AiService {
         return callAiModel(weatherSalesTrendTemplate, Map.of("weatherData", weatherData, "salesData", salesData), "판매 동향 분석");
     }
 
-    // ★★★ [수정] 반환 타입을 String으로 되돌리고, WeatherInfo 객체에서 summary만 추출하여 반환
     @Transactional(readOnly = true)
     public String getCurrentWeather(Long storeId) {
         WeatherInfo weatherInfo = weatherService.getWeatherForStore(storeId, LocalDate.now());
@@ -83,7 +82,6 @@ public class AiService {
         return callAiModel(marketingCopyTemplate, Map.of("salesData", salesData, "request", userRequest, "chatHistory", chatHistory), "마케팅 문구 생성");
     }
 
-    // ★★★ [수정] WeatherInfo 객체를 받아서 처리하도록 수정
     @Transactional(readOnly = true)
     public String analyzeSalesByWeather(Long storeId, String chatHistory) {
         List<Order> orders = orderRepository.findAllByStoreId(storeId);
@@ -91,9 +89,9 @@ public class AiService {
         String salesAndWeatherData = orders.stream()
                 .flatMap(order -> {
                     WeatherInfo weatherInfo = weatherService.getWeatherForStore(storeId, order.getOrderedAt().toLocalDate());
-                    String weather = weatherInfo.summary(); // WeatherInfo 객체에서 날씨 요약 정보 추출
+                    String weather = weatherInfo.summary();
                     return order.getOrderProducts().stream()
-                            .filter(op -> op.getProduct() != null) // 안전장치
+                            .filter(op -> op.getProduct() != null)
                             .map(op -> String.format("날짜: %s, 날씨: %s, 상품: %s, 수량: %d",
                                     order.getOrderedAt().toLocalDate(), weather, op.getProduct().getName(), op.getQuantity()));
                 })
