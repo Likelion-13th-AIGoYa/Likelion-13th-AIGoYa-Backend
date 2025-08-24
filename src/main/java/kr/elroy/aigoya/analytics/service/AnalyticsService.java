@@ -3,7 +3,7 @@ package kr.elroy.aigoya.analytics.service;
 import kr.elroy.aigoya.ai.dto.response.WeatherInfoResponse;
 import kr.elroy.aigoya.ai.service.AiService;
 import kr.elroy.aigoya.ai.service.WeatherService;
-import kr.elroy.aigoya.analytics.dto.internal.WeatherInfo; // ★★★ [수정] internal 패키지로 경로 변경
+import kr.elroy.aigoya.analytics.dto.internal.WeatherInfo;
 import kr.elroy.aigoya.analytics.dto.internal.DailySummaryRawDto;
 import kr.elroy.aigoya.analytics.dto.request.AnalysisPeriod;
 import kr.elroy.aigoya.analytics.dto.request.MenuAnalysisType;
@@ -12,6 +12,8 @@ import kr.elroy.aigoya.analytics.dto.response.HourlySalesResponse;
 import kr.elroy.aigoya.analytics.dto.response.MenuAnalysisResponse;
 import kr.elroy.aigoya.analytics.exception.InvalidAnalysisParameterException;
 import kr.elroy.aigoya.analytics.repository.AnalyticsRepository;
+import kr.elroy.aigoya.product.domain.Product;
+import kr.elroy.aigoya.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -41,17 +43,34 @@ public class AnalyticsService {
     private final AnalyticsRepository analyticsRepository;
     private final WeatherService weatherService;
     private final AiService aiService;
+    private final ProductRepository productRepository;
 
     @Cacheable(value = "weatherAnalytics", key = "#storeId")
     public WeatherInfoResponse getWeatherAnalytics(Long storeId) {
         log.info("캐시된 데이터가 없어 새로운 날씨 기반 분석 정보를 생성합니다. storeId: {}", storeId);
 
+        // ★★★ [수정] 빠져있던 날짜 파라미터를 추가하여 호출 ★★★
         WeatherInfo weatherInfo = weatherService.getWeatherForStore(storeId, LocalDate.now());
         String weatherSummary = weatherInfo.summary();
         Double temperature = weatherInfo.temperature();
 
-        String weatherDataForAi = String.format("현재 날씨: %s, 기온: %.1f도", weatherSummary, temperature);
-        String salesTrendInsight = aiService.generateWeatherBasedSalesTrend(storeId, weatherDataForAi);
+        String weatherDataForAi;
+        if (temperature != null) {
+            weatherDataForAi = String.format("현재 날씨: %s, 기온: %.1f도", weatherSummary, temperature);
+        } else {
+            weatherDataForAi = String.format("현재 날씨: %s, 기온 정보 없음", weatherSummary);
+        }
+
+        List<Product> products = productRepository.findByStoreId(storeId);
+        String productListForAi = products.stream()
+                .map(Product::getName)
+                .collect(Collectors.joining(", "));
+
+        if (productListForAi.isEmpty()) {
+            productListForAi = "등록된 상품 없음";
+        }
+
+        String salesTrendInsight = aiService.generateWeatherBasedSalesTrend(weatherDataForAi, productListForAi);
 
         return new WeatherInfoResponse(temperature, weatherSummary, salesTrendInsight);
     }

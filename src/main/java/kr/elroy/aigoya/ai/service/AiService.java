@@ -1,6 +1,6 @@
 package kr.elroy.aigoya.ai.service;
 
-import kr.elroy.aigoya.analytics.dto.internal.WeatherInfo; // ★★★ [수정] internal 패키지로 경로 변경
+import kr.elroy.aigoya.analytics.dto.internal.WeatherInfo;
 import kr.elroy.aigoya.order.OrderRepository;
 import kr.elroy.aigoya.order.domain.Order;
 import lombok.extern.slf4j.Slf4j;
@@ -48,11 +48,8 @@ public class AiService {
         this.weatherService = weatherService;
     }
 
-    @Transactional(readOnly = true)
-    public String generateWeatherBasedSalesTrend(Long storeId, String weatherData) {
-        List<Order> orders = orderRepository.findAllByStoreId(storeId);
-        String salesData = convertOrdersToSalesDataString(orders);
-        return callAiModel(weatherSalesTrendTemplate, Map.of("weatherData", weatherData, "salesData", salesData), "판매 동향 분석");
+    public String generateWeatherBasedSalesTrend(String weatherData, String productList) {
+        return callAiModel(weatherSalesTrendTemplate, Map.of("weatherData", weatherData, "productList", productList), "판매 동향 분석");
     }
 
     @Transactional(readOnly = true)
@@ -88,7 +85,7 @@ public class AiService {
 
         String salesAndWeatherData = orders.stream()
                 .flatMap(order -> {
-                    WeatherInfo weatherInfo = weatherService.getWeatherForStore(storeId, order.getOrderedAt().toLocalDate());
+                    WeatherInfo weatherInfo = weatherService.getWeatherForStore(storeId, LocalDate.now());
                     String weather = weatherInfo.summary();
                     return order.getOrderProducts().stream()
                             .filter(op -> op.getProduct() != null)
