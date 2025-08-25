@@ -1,6 +1,7 @@
 package kr.elroy.aigoya.store.controller;
 
 import kr.elroy.aigoya.store.api.StoreApi;
+import kr.elroy.aigoya.store.domain.Store;
 import kr.elroy.aigoya.store.dto.request.CreateStoreRequest;
 import kr.elroy.aigoya.store.dto.request.LoginRequest;
 import kr.elroy.aigoya.store.dto.response.LoginResponse;
@@ -8,6 +9,8 @@ import kr.elroy.aigoya.store.dto.response.StoreResponse;
 import kr.elroy.aigoya.store.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Objects;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,9 +20,11 @@ public class StoreController implements StoreApi {
     @Override
     public StoreResponse createStore(CreateStoreRequest request) {
         // REMOVEME
-        throw new IllegalStateException("테스트 환경에서는 회원가입을 할 수 없습니다.");
-//        Store store = storeService.createStore(request);
-//        return StoreResponse.of(store);
+        if (!Objects.equals(request.email(), "eval@elroy.kr"))
+            throw new IllegalStateException("테스트 환경에서는 회원가입을 할 수 없습니다.");
+
+        Store store = storeService.createStore(request);
+        return StoreResponse.of(store);
     }
 
     @Override
