@@ -33,10 +33,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                                 .requestMatchers("/v1/stores/login", "/v1/stores/create").permitAll()
-                                .requestMatchers("/api/ai/**").permitAll()
                                 .requestMatchers("/v1/stores/admin/**").hasRole("ADMIN")
                                 .anyRequest().authenticated()
-//                  .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

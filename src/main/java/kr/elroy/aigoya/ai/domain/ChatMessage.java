@@ -35,6 +35,10 @@ public class ChatMessage {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_room_id", nullable = false)
+    private ChatRoom chatRoom;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ChatRole role;
