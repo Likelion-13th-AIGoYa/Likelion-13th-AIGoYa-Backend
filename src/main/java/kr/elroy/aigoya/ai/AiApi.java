@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import kr.elroy.aigoya.ai.dto.request.ChatRequest;
 import kr.elroy.aigoya.ai.dto.response.ChatMessageResponse;
+import kr.elroy.aigoya.ai.dto.response.ChatRoomResponse;
 import kr.elroy.aigoya.ai.dto.response.ReportResponse;
 import kr.elroy.aigoya.store.config.CurrentStoreId;
 import org.springframework.validation.annotation.Validated;
@@ -44,5 +45,13 @@ public interface AiApi {
             @Parameter(description = "채팅방 ID", required = true, example = "1")
             @PathVariable
             Long chatRoomId
+    );
+
+    @Operation(summary = "채팅방 목록 조회", description = "가게의 모든 채팅방 목록을 조회합니다.")
+    @GetMapping("/chat/rooms")
+    List<ChatRoomResponse> getChatRooms(
+            @CurrentStoreId
+            @Parameter(hidden = true)
+            Long storeId
     );
 }

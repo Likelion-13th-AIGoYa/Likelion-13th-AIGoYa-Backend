@@ -4,6 +4,7 @@ import kr.elroy.aigoya.ai.domain.ChatMessage;
 import kr.elroy.aigoya.ai.domain.ChatRole;
 import kr.elroy.aigoya.ai.domain.ChatRoom;
 import kr.elroy.aigoya.ai.dto.response.ChatMessageResponse;
+import kr.elroy.aigoya.ai.dto.response.ChatRoomResponse;
 import kr.elroy.aigoya.ai.repository.ChatMessageRepository;
 import kr.elroy.aigoya.ai.repository.ChatRoomRepository;
 import kr.elroy.aigoya.store.domain.Store;
@@ -212,5 +213,12 @@ public class AgentService {
                 .content(content)
                 .build();
         chatMessageRepository.save(message);
+    }
+
+    public List<ChatRoomResponse> getChatRooms(Long storeId) {
+        List<ChatRoom> chatRooms = chatRoomRepository.findAllByStoreId(storeId);
+        return chatRooms.stream()
+                .map(ChatRoomResponse::from)
+                .collect(Collectors.toList());
     }
 }

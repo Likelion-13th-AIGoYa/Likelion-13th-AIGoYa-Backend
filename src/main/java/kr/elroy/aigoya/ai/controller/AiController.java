@@ -3,6 +3,7 @@ package kr.elroy.aigoya.ai.controller;
 import kr.elroy.aigoya.ai.AiApi;
 import kr.elroy.aigoya.ai.dto.request.ChatRequest;
 import kr.elroy.aigoya.ai.dto.response.ChatMessageResponse;
+import kr.elroy.aigoya.ai.dto.response.ChatRoomResponse;
 import kr.elroy.aigoya.ai.dto.response.ReportResponse;
 import kr.elroy.aigoya.ai.service.AgentService;
 import lombok.RequiredArgsConstructor;
@@ -27,5 +28,9 @@ public class AiController implements AiApi {
 
     public List<ChatMessageResponse> getChatHistory(Long storeId, Long chatRoomId) {
         return agentService.getChatHistory(storeId, chatRoomId);
+    }
+
+    public List<ChatRoomResponse> getChatRooms(Long storeId) {
+        return agentService.getChatRooms(storeId);
     }
 }
