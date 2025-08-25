@@ -1,8 +1,10 @@
 package kr.elroy.aigoya.ai.service;
 
 import kr.elroy.aigoya.ai.domain.ChatMessage;
-import kr.elroy.aigoya.ai.domain.ChatMessageRepository;
+import kr.elroy.aigoya.ai.repository.ChatMessageRepository;
 import kr.elroy.aigoya.ai.domain.ChatRole;
+import kr.elroy.aigoya.ai.domain.ChatRoom;
+import kr.elroy.aigoya.ai.repository.ChatRoomRepository;
 import kr.elroy.aigoya.store.domain.Store;
 import kr.elroy.aigoya.store.repository.StoreRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -14,54 +16,82 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import kr.elroy.aigoya.ai.dto.response.ChatMessageResponse;
 
 @Slf4j
 @Service
 @Transactional
 public class AgentService {
 
-    private static final int HISTORY_SIZE = 5;
+    private static final int HISTORY_SIZE = 10;
 
     private final AiService aiService;
     private final StoreRepository storeRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final ChatClient chatClient;
     private final PromptTemplate routerPromptTemplate;
     private final PromptTemplate finalSynthesisPromptTemplate;
     private final PromptTemplate summaryPromptTemplate;
     private final PromptTemplate generalConversationPromptTemplate;
+    private final PromptTemplate topicContinuityPromptTemplate;
 
-    public AgentService(AiService aiService, StoreRepository storeRepository, ChatMessageRepository chatMessageRepository, ChatClient.Builder chatClientBuilder,
+    public AgentService(AiService aiService, StoreRepository storeRepository, ChatMessageRepository chatMessageRepository, ChatRoomRepository chatRoomRepository, ChatClient.Builder chatClientBuilder,
                         @Value("classpath:/prompts/ai-router-prompt.st") Resource routerResource,
                         @Value("classpath:/prompts/final-synthesis-prompt.st") Resource finalSynthesisResource,
                         @Value("classpath:/prompts/history-summary-prompt.st") Resource summaryResource,
-                        @Value("classpath:/prompts/general-conversation-prompt.st") Resource generalConversationResource) {
+                        @Value("classpath:/prompts/general-conversation-prompt.st") Resource generalConversationResource,
+                        @Value("classpath:/prompts/topic-continuity-prompt.st") Resource topicContinuityResource) {
         this.aiService = aiService;
         this.storeRepository = storeRepository;
         this.chatMessageRepository = chatMessageRepository;
+        this.chatRoomRepository = chatRoomRepository;
         this.chatClient = chatClientBuilder.build();
         this.routerPromptTemplate = new PromptTemplate(routerResource);
         this.finalSynthesisPromptTemplate = new PromptTemplate(finalSynthesisResource);
         this.summaryPromptTemplate = new PromptTemplate(summaryResource);
         this.generalConversationPromptTemplate = new PromptTemplate(generalConversationResource);
+        this.topicContinuityPromptTemplate = new PromptTemplate(topicContinuityResource);
     }
 
-    public String chat(Long storeId, String userMessage) {
+    public Map<String, Object> chat(Long storeId, Long chatRoomId, String userMessage) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid store Id:" + storeId));
 
-        saveMessage(store, ChatRole.USER, userMessage);
+        ChatRoom chatRoom;
+        if (chatRoomId == null) {
+            chatRoom = ChatRoom.from(store);
+            chatRoomRepository.save(chatRoom);
+        } else {
+            chatRoom = chatRoomRepository.findById(chatRoomId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid chatRoom Id:" + chatRoomId));
+            // 채팅방이 해당 storeId에 속하는지 검증
+            if (!chatRoom.getStore().getId().equals(storeId)) {
+                throw new IllegalArgumentException("ChatRoom does not belong to the provided storeId.");
+            }
+        }
 
-        String fullChatHistory = getFormattedChatHistory(storeId);
+        String fullChatHistory = getFormattedChatHistory(chatRoom.getId());
+        boolean isContinuation = isTopicContinuation(fullChatHistory, userMessage);
+        log.info("Is topic continuation? {}", isContinuation);
 
-        String historySummary = summarizeChatHistory(fullChatHistory);
-        log.info("Chat history summarized: {}", historySummary);
+        saveMessage(store, chatRoom, ChatRole.USER, userMessage);
+
+        String historySummary;
+        if (isContinuation) {
+            historySummary = summarizeChatHistory(fullChatHistory);
+            log.info("Chat history summarized: {}", historySummary);
+        } else {
+            historySummary = "No relevant previous conversation.";
+            log.info("Starting a new topic. No history summary will be used.");
+        }
 
         String routerInput = historySummary + "\nUSER: " + userMessage;
         String route = getRouteFromAi(routerInput);
@@ -85,9 +115,47 @@ public class AgentService {
             finalResponse = synthesizeFinalResponse(historySummary, toolResults);
         }
 
-        saveMessage(store, ChatRole.AI, finalResponse);
-        return finalResponse;
+        saveMessage(store, chatRoom, ChatRole.AI, finalResponse);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("chatRoomId", chatRoom.getId());
+        result.put("report", finalResponse);
+        return result;
     }
+
+    @Transactional(readOnly = true)
+    public List<ChatMessageResponse> getChatHistory(Long storeId, Long chatRoomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid chatRoom Id:" + chatRoomId));
+
+        // 채팅방이 해당 storeId에 속하는지 검증
+        if (!chatRoom.getStore().getId().equals(storeId)) {
+            throw new IllegalArgumentException("ChatRoom does not belong to the provided storeId.");
+        }
+
+        List<ChatMessage> messages = chatMessageRepository.findByChatRoomIdOrderByCreatedAtAsc(chatRoomId);
+        return messages.stream()
+                .map(ChatMessageResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    private boolean isTopicContinuation(String chatHistory, String userMessage) {
+        if (!StringUtils.hasText(chatHistory)) {
+            return false;
+        }
+
+        Map<String, Object> model = Map.of(
+                "chatHistory", chatHistory,
+                "userMessage", userMessage
+        );
+
+        String decision = chatClient.prompt(topicContinuityPromptTemplate.create(model))
+                .call()
+                .content();
+
+        return "CONTINUE".equalsIgnoreCase(decision.trim());
+    }
+
 
     private String executeTool(String toolName, Long storeId, String userMessage, String chatHistorySummary) {
         switch (toolName) {
@@ -134,18 +202,19 @@ public class AgentService {
                 .content();
     }
 
-    private String getFormattedChatHistory(Long storeId) {
+    private String getFormattedChatHistory(Long chatRoomId) {
         Pageable pageable = PageRequest.of(0, HISTORY_SIZE);
-        List<ChatMessage> recentMessages = chatMessageRepository.findByStoreIdOrderByCreatedAtDesc(storeId, pageable);
+        List<ChatMessage> recentMessages = chatMessageRepository.findByChatRoomIdOrderByCreatedAtDesc(chatRoomId, pageable);
         Collections.reverse(recentMessages);
         return recentMessages.stream()
                 .map(message -> message.getRole().name() + ": " + message.getContent())
                 .collect(Collectors.joining("\n"));
     }
 
-    private void saveMessage(Store store, ChatRole role, String content) {
+    private void saveMessage(Store store, ChatRoom chatRoom, ChatRole role, String content) {
         ChatMessage message = ChatMessage.builder()
                 .store(store)
+                .chatRoom(chatRoom)
                 .role(role)
                 .content(content)
                 .build();

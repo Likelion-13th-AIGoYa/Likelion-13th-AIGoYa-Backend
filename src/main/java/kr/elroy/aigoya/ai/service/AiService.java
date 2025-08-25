@@ -3,6 +3,8 @@ package kr.elroy.aigoya.ai.service;
 import kr.elroy.aigoya.analytics.dto.internal.WeatherInfo;
 import kr.elroy.aigoya.order.OrderRepository;
 import kr.elroy.aigoya.order.domain.Order;
+import kr.elroy.aigoya.product.domain.Product;
+import kr.elroy.aigoya.product.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.PromptTemplate;
@@ -29,6 +31,7 @@ public class AiService {
     private final PromptTemplate weatherSalesTrendTemplate;
     private final OrderRepository orderRepository;
     private final WeatherService weatherService;
+    private final ProductService productService;
 
     public AiService(ChatClient.Builder chatClientBuilder,
                      @Value("classpath:/prompts/sales-report.st") Resource salesReportResource,
@@ -37,7 +40,8 @@ public class AiService {
                      @Value("classpath:/prompts/sales-analysis-by-weather-prompt.st") Resource salesAnalysisByWeatherResource,
                      @Value("classpath:/prompts/weather-sales-trend-prompt.st") Resource weatherSalesTrendResource,
                      OrderRepository orderRepository,
-                     WeatherService weatherService) {
+                     WeatherService weatherService,
+                     ProductService productService) {
         this.chatClient = chatClientBuilder.build();
         this.salesReportTemplate = new PromptTemplate(salesReportResource);
         this.inventoryPredictionTemplate = new PromptTemplate(inventoryPredictionResource);
@@ -46,6 +50,7 @@ public class AiService {
         this.weatherSalesTrendTemplate = new PromptTemplate(weatherSalesTrendResource);
         this.orderRepository = orderRepository;
         this.weatherService = weatherService;
+        this.productService = productService;
     }
 
     public String generateWeatherBasedSalesTrend(String weatherData, String productList) {
@@ -74,9 +79,16 @@ public class AiService {
 
     @Transactional(readOnly = true)
     public String generateMarketingCopy(Long storeId, String userRequest, String chatHistory) {
-        List<Order> orders = orderRepository.findAllByStoreId(storeId);
-        String salesData = convertOrdersToSalesDataString(orders);
-        return callAiModel(marketingCopyTemplate, Map.of("salesData", salesData, "request", userRequest, "chatHistory", chatHistory), "마케팅 문구 생성");
+        List<Product> products = productService.getProductsByStore(storeId);
+        String productList = products.stream()
+                .map(product -> String.format("- %s (카테고리: %s, 가격: %d원)", product.getName(), product.getCategory().getName(), product.getPrice()))
+                .collect(Collectors.joining("\n"));
+
+        if (productList.isEmpty()) {
+            productList = "현재 판매중인 상품이 없습니다.";
+        }
+
+        return callAiModel(marketingCopyTemplate, Map.of("productList", productList, "request", userRequest, "chatHistory", chatHistory), "마케팅 문구 생성");
     }
 
     @Transactional(readOnly = true)
