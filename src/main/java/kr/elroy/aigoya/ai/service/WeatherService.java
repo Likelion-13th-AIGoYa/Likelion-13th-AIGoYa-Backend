@@ -14,7 +14,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 @Slf4j
@@ -137,6 +136,7 @@ public class WeatherService {
         }
 
         log.info("가게 날씨 조회: storeId={}, nx={}, ny={}", storeId, nx, ny);
+
         return getWeatherFor(date, nx, ny);
     }
 }
