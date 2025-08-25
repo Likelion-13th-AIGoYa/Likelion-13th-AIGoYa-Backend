@@ -6,7 +6,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @EnableJpaAuditing
-@EnableCaching // ★★★ [추가] 캐싱 기능 활성화
+@EnableCaching
 @SpringBootApplication
 public class AigoyaApplication {
 
