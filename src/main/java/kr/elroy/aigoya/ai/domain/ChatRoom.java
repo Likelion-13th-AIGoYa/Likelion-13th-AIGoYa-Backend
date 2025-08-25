@@ -1,6 +1,14 @@
 package kr.elroy.aigoya.ai.domain;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import kr.elroy.aigoya.store.domain.Store;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -20,6 +28,9 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private String title;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
     private Store store;
@@ -28,11 +39,12 @@ public class ChatRoom {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    private ChatRoom(Store store) {
+    private ChatRoom(Store store, String title) {
         this.store = store;
+        this.title = title;
     }
 
-    public static ChatRoom from(Store store) {
-        return new ChatRoom(store);
+    public static ChatRoom from(Store store, String title) {
+        return new ChatRoom(store, title);
     }
 }

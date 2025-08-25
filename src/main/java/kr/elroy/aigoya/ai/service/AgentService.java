@@ -1,9 +1,10 @@
 package kr.elroy.aigoya.ai.service;
 
 import kr.elroy.aigoya.ai.domain.ChatMessage;
-import kr.elroy.aigoya.ai.repository.ChatMessageRepository;
 import kr.elroy.aigoya.ai.domain.ChatRole;
 import kr.elroy.aigoya.ai.domain.ChatRoom;
+import kr.elroy.aigoya.ai.dto.response.ChatMessageResponse;
+import kr.elroy.aigoya.ai.repository.ChatMessageRepository;
 import kr.elroy.aigoya.ai.repository.ChatRoomRepository;
 import kr.elroy.aigoya.store.domain.Store;
 import kr.elroy.aigoya.store.repository.StoreRepository;
@@ -23,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import kr.elroy.aigoya.ai.dto.response.ChatMessageResponse;
 
 @Slf4j
 @Service
@@ -67,12 +67,11 @@ public class AgentService {
 
         ChatRoom chatRoom;
         if (chatRoomId == null) {
-            chatRoom = ChatRoom.from(store);
+            chatRoom = ChatRoom.from(store, userMessage.substring(0, Math.min(50, userMessage.length())));
             chatRoomRepository.save(chatRoom);
         } else {
             chatRoom = chatRoomRepository.findById(chatRoomId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid chatRoom Id:" + chatRoomId));
-            // 채팅방이 해당 storeId에 속하는지 검증
             if (!chatRoom.getStore().getId().equals(storeId)) {
                 throw new IllegalArgumentException("ChatRoom does not belong to the provided storeId.");
             }
@@ -158,20 +157,14 @@ public class AgentService {
 
 
     private String executeTool(String toolName, Long storeId, String userMessage, String chatHistorySummary) {
-        switch (toolName) {
-            case "generateSalesReport":
-                return aiService.generateSalesReport(storeId, chatHistorySummary);
-            case "predictInventory":
-                return aiService.predictInventory(storeId, chatHistorySummary);
-            case "generateMarketingCopy":
-                return aiService.generateMarketingCopy(storeId, userMessage, chatHistorySummary);
-            case "analyzeSalesByWeather":
-                return aiService.analyzeSalesByWeather(storeId, chatHistorySummary);
-            case "getWeather":
-                return aiService.getCurrentWeather(storeId);
-            default:
-                return "알 수 없는 도구입니다: " + toolName;
-        }
+        return switch (toolName) {
+            case "generateSalesReport" -> aiService.generateSalesReport(storeId, chatHistorySummary);
+            case "predictInventory" -> aiService.predictInventory(storeId, chatHistorySummary);
+            case "generateMarketingCopy" -> aiService.generateMarketingCopy(storeId, userMessage, chatHistorySummary);
+            case "analyzeSalesByWeather" -> aiService.analyzeSalesByWeather(storeId, chatHistorySummary);
+            case "getWeather" -> aiService.getCurrentWeather(storeId);
+            default -> "알 수 없는 도구입니다: " + toolName;
+        };
     }
 
     private String synthesizeFinalResponse(String chatHistorySummary, Map<String, String> toolResults) {

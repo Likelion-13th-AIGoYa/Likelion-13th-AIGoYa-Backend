@@ -19,7 +19,7 @@ import java.util.List;
 
 @Tag(name = "AI 채팅", description = "AI 채팅 API (인증 필요)")
 @Validated
-@RequestMapping("/api/ai")
+@RequestMapping("v1/ai")
 public interface AiApi {
 
     @Operation(summary = "AI 채팅", description = "AI와 채팅하고 보고서를 생성합니다.")
