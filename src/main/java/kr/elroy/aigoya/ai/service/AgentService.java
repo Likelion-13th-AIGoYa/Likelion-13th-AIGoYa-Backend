@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class AgentService {
 
-    private static final int HISTORY_SIZE = 10;
+    private static final int HISTORY_SIZE = 3;
 
     private final AiService aiService;
     private final StoreRepository storeRepository;
